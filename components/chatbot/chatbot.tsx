@@ -28,7 +28,7 @@ export const FloatingChatbot = () => {
   const [message, setMessage] = useState<ChatbotMessageProps[]>([]);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [reactions, setReactions] = useState<{ [messageId: string]: string[] }>(
     {}
@@ -66,6 +66,17 @@ export const FloatingChatbot = () => {
     "What can you do?",
     "How to contact Fikar?",
   ];
+
+  useEffect(() => {
+    setNow(new Date());
+  }, []);
+
+  useEffect(() => {
+    if (!now) return;
+
+    const interval = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(interval);
+  }, [now]);
 
   // Load messages from localStorage on mount and ensure all have IDs
   useEffect(() => {

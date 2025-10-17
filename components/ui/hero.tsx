@@ -39,20 +39,31 @@ const ContactMe = dynamic(
 export const Hero = () => {
   const [isDesktop, setIsDesktop] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const updateWindowwidth = () => {
       setIsDesktop(window.innerWidth >= 1280);
     };
     updateWindowwidth();
     window.addEventListener("resize", updateWindowwidth);
     return () => window.removeEventListener("resize", updateWindowwidth);
-  }, []);
+  }, [mounted]);
 
   const DesktopText =
     "A recent Informatics graduate from President University with a specialization in Artificial Intelligence. My expertise spans software development, web development, and user-centric digital design, skills honed during my tenure as the former Vice Head of the Design Division for the President University Major Association. I am a proven problem-solver with strong leadership and communication skills, dedicated to continuous learning and delivering high-quality, impactful projects.";
   const MobileText =
     "A recent Informatics graduate from President University specializing in Artificial Intelligence. Skilled in software project development, web development, and digital design, ready to create impactful digital solutions.";
+
+  {
+    mounted ? (isDesktop ? DesktopText : MobileText) : MobileText;
+  }
 
   const downloadCVHandler = () => {
     try {
