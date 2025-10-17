@@ -61,10 +61,6 @@ export const Hero = () => {
   const MobileText =
     "A recent Informatics graduate from President University specializing in Artificial Intelligence. Skilled in software project development, web development, and digital design, ready to create impactful digital solutions.";
 
-  {
-    mounted ? (isDesktop ? DesktopText : MobileText) : MobileText;
-  }
-
   const downloadCVHandler = () => {
     try {
       setDownloading(true);
@@ -133,7 +129,7 @@ export const Hero = () => {
                 viewport={{ once: false, amount: 0.3 }}
                 className="max-w-[500px] xl:max-w-[750px] mb-9 mt-4 text-foreground font-normal font-work-sans xl:text-justify leading-relaxed text-base xl:text-lg"
               >
-                {isDesktop ? DesktopText : MobileText}
+                {mounted ? (isDesktop ? DesktopText : MobileText) : MobileText}
               </motion.p>
 
               <motion.div

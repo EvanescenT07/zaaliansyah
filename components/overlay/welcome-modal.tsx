@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAudioContext } from "@/components/ui/audio-context";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, VolumeX, Play, Pause, X } from "lucide-react";
+import { Music, VolumeX, Play, Pause } from "lucide-react";
 import Image from "next/image";
 
 export const WelcomeModal = () => {

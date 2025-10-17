@@ -15,5 +15,5 @@ export function useTimestamp(createdAt: string, now: Date | null) {
       minute: "2-digit",
       second: "2-digit",
     });
-  }, [createdAt, now?.getMinutes()]);
+  }, [createdAt, now]);
 }
