@@ -5,7 +5,7 @@ import { useMemo } from "react";
 export function useTimestamp(createdAt: string, now: Date | null) {
   return useMemo(() => {
     // Handle null case
-    if (!now) return "Now";
+    if (!now) return "Loading...";
 
     const date = new Date(createdAt);
     const diffms = Math.abs(now.getTime() - date.getTime());

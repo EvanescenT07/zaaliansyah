@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAudioContext } from "@/components/ui/audio-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { Music, VolumeX, Play, Pause } from "lucide-react";
@@ -49,6 +49,8 @@ export const WelcomeModal = () => {
   }, [isOpen]);
 
   // Handle preview play/pause
+  const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const togglePreview = (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -58,13 +60,24 @@ export const WelcomeModal = () => {
     } else {
       play();
       setIsPreviewPlaying(true);
-      // Auto-pause preview after 10 seconds
-      setTimeout(() => {
+    }
+  };
+
+  useEffect(() => {
+    if (isPreviewPlaying) {
+      previewTimeoutRef.current = setTimeout(() => {
         pause();
         setIsPreviewPlaying(false);
       }, 10000);
     }
-  };
+
+    return () => {
+      if (previewTimeoutRef.current) {
+        clearTimeout(previewTimeoutRef.current);
+        previewTimeoutRef.current = null;
+      }
+    };
+  }, [isPreviewPlaying, pause]);
 
   // Handle user choice
   const handlePlayMusic = (e: React.MouseEvent) => {
