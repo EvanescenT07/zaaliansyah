@@ -39,15 +39,22 @@ const ContactMe = dynamic(
 export const Hero = () => {
   const [isDesktop, setIsDesktop] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const updateWindowwidth = () => {
       setIsDesktop(window.innerWidth >= 1280);
     };
     updateWindowwidth();
     window.addEventListener("resize", updateWindowwidth);
     return () => window.removeEventListener("resize", updateWindowwidth);
-  }, []);
+  }, [mounted]);
 
   const DesktopText =
     "A recent Informatics graduate from President University with a specialization in Artificial Intelligence. My expertise spans software development, web development, and user-centric digital design, skills honed during my tenure as the former Vice Head of the Design Division for the President University Major Association. I am a proven problem-solver with strong leadership and communication skills, dedicated to continuous learning and delivering high-quality, impactful projects.";
@@ -122,7 +129,7 @@ export const Hero = () => {
                 viewport={{ once: false, amount: 0.3 }}
                 className="max-w-[500px] xl:max-w-[750px] mb-9 mt-4 text-foreground font-normal font-work-sans xl:text-justify leading-relaxed text-base xl:text-lg"
               >
-                {isDesktop ? DesktopText : MobileText}
+                {mounted ? (isDesktop ? DesktopText : MobileText) : MobileText}
               </motion.p>
 
               <motion.div

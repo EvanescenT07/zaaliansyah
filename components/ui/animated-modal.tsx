@@ -1,8 +1,7 @@
-"use client";
 import { cn } from "@/lib/utils";
+import { ModalProviderProps } from "@/types/component-types";
 import { AnimatePresence, motion } from "framer-motion";
-import { useTheme } from "next-themes";
-import Image from "next/image";
+import { X } from "lucide-react";
 import React, {
   ReactNode,
   createContext,
@@ -19,8 +18,22 @@ interface ModalContextType {
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
-export const ModalProvider = ({ children }: { children: ReactNode }) => {
-  const [open, setOpen] = useState(false);
+export const ModalProvider = ({
+  children,
+  open: externalOpen,
+  onOpenChange,
+}: ModalProviderProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+
+  const setOpen = (value: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(value);
+    } else {
+      setInternalOpen(value);
+    }
+  };
 
   return (
     <ModalContext.Provider value={{ open, setOpen }}>
@@ -37,8 +50,20 @@ export const useModal = () => {
   return context;
 };
 
-export function Modal({ children }: { children: ReactNode }) {
-  return <ModalProvider>{children}</ModalProvider>;
+export function Modal({
+  children,
+  open,
+  onOpenChange,
+}: {
+  children: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  return (
+    <ModalProvider open={open} onOpenChange={onOpenChange}>
+      {children}
+    </ModalProvider>
+  );
 }
 
 export const ModalTrigger = ({
@@ -259,7 +284,6 @@ const Overlay = ({ className }: { className?: string }) => {
 
 const CloseIcon = () => {
   const { setOpen } = useModal();
-  const { theme } = useTheme();
 
   return (
     <button
@@ -280,20 +304,7 @@ const CloseIcon = () => {
       title="Close modal"
       aria-label="Close modal"
     >
-      <Image
-        src={
-          theme === "dark"
-            ? "/assets/close-dark.svg"
-            : "/assets/close-light.svg"
-        }
-        alt="Close"
-        width={20}
-        height={20}
-        className={cn(
-          "h-4 w-4 sm:h-5 sm:w-5",
-          "group-hover:scale-110 group-hover:rotate-3 transition-transform duration-200"
-        )}
-      />
+      <X className="h-4 w-4 sm:h-5 sm:w-5 text-foreground group-hover:scale-110 transition-transform duration-200" />
     </button>
   );
 };

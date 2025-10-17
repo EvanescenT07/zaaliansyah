@@ -2,8 +2,11 @@
 
 import { useMemo } from "react";
 
-export function useTimestamp(createdAt: string, now: Date) {
+export function useTimestamp(createdAt: string, now: Date | null) {
   return useMemo(() => {
+    // Handle null case
+    if (!now) return "Loading...";
+
     const date = new Date(createdAt);
     const diffms = Math.abs(now.getTime() - date.getTime());
     if (diffms < 5000) return "just now";
@@ -12,5 +15,5 @@ export function useTimestamp(createdAt: string, now: Date) {
       minute: "2-digit",
       second: "2-digit",
     });
-  }, [createdAt, now.getMinutes()]);
+  }, [createdAt, now]);
 }

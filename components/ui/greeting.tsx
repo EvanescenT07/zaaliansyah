@@ -10,60 +10,76 @@ import TypeIt from "typeit-react";
 // Floating particles component
 const FloatingParticles = () => {
   const { theme } = useTheme();
+  const [particles, setParticles] = useState<
+    Array<{
+      width: number;
+      height: number;
+      background: string;
+      opacity: number;
+      initial: { x: number; y: number; scale: number; rotate: number };
+      animate: { x: number[]; y: number[]; scale: number[]; rotate: number[] };
+      transition: { duration: number; delay: number };
+    }>
+  >([]);
+
+  // Generate particles only on client side
+  useEffect(() => {
+    const generatedParticles = [...Array(45)].map(() => ({
+      width: Math.random() * 4 + 1,
+      height: Math.random() * 4 + 1,
+      background:
+        theme === "dark"
+          ? `hsl(${Math.random() * 60 + 200}, 70%, ${Math.random() * 30 + 50}%)`
+          : "rgba(0, 0, 0, 0.8)",
+      opacity: Math.random() * 0.6 + 0.3,
+      initial: {
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        scale: 0,
+        rotate: 0,
+      },
+      animate: {
+        x: [
+          Math.random() * window.innerWidth,
+          Math.random() * window.innerWidth,
+          Math.random() * window.innerWidth,
+        ],
+        y: [
+          Math.random() * window.innerHeight,
+          Math.random() * window.innerHeight,
+          Math.random() * window.innerHeight,
+        ],
+        scale: [0, 1, 0.8, 1, 0],
+        rotate: [0, 180, 360],
+      },
+      transition: {
+        duration: Math.random() * 20 + 15,
+        delay: Math.random() * 5,
+      },
+    }));
+    setParticles(generatedParticles);
+  }, [theme]);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(30)].map((_, i) => (
+      {particles.map((particle, i) => (
         <motion.div
           key={i}
           className="absolute rounded-full"
           style={{
-            width: Math.random() * 4 + 1 + "px",
-            height: Math.random() * 4 + 1 + "px",
-            background:
-              theme === "dark"
-                ? `hsl(${Math.random() * 60 + 200}, 70%, ${
-                    Math.random() * 30 + 50
-                  }%)`
-                : "rgba(0, 0, 0, 0.8)",
-            opacity: Math.random() * 0.6 + 0.3,
+            width: particle.width + "px",
+            height: particle.height + "px",
+            background: particle.background,
+            opacity: particle.opacity,
           }}
-          initial={{
-            x:
-              Math.random() *
-              (typeof window !== "undefined" ? window.innerWidth : 1000),
-            y:
-              Math.random() *
-              (typeof window !== "undefined" ? window.innerHeight : 1000),
-            scale: 0,
-            rotate: 0,
-          }}
-          animate={{
-            x: [
-              Math.random() *
-                (typeof window !== "undefined" ? window.innerWidth : 1000),
-              Math.random() *
-                (typeof window !== "undefined" ? window.innerWidth : 1000),
-              Math.random() *
-                (typeof window !== "undefined" ? window.innerWidth : 1000),
-            ],
-            y: [
-              Math.random() *
-                (typeof window !== "undefined" ? window.innerHeight : 1000),
-              Math.random() *
-                (typeof window !== "undefined" ? window.innerHeight : 1000),
-              Math.random() *
-                (typeof window !== "undefined" ? window.innerHeight : 1000),
-            ],
-            scale: [0, 1, 0.8, 1, 0],
-            rotate: [0, 180, 360],
-          }}
+          initial={particle.initial}
+          animate={particle.animate}
           transition={{
-            duration: Math.random() * 20 + 15,
+            duration: particle.transition.duration,
             repeat: Infinity,
             repeatType: "loop",
             ease: "easeInOut",
-            delay: Math.random() * 5,
+            delay: particle.transition.delay,
           }}
         />
       ))}
@@ -71,75 +87,80 @@ const FloatingParticles = () => {
   );
 };
 
+function getGreeting(): string[] {
+  const hour = dayjs().hour();
+
+  if (hour >= 5 && hour < 12) {
+    return [
+      "Good Morning!", // English
+      "Guten Morgen!", // German
+      "Goedemorgen!", // Dutch
+      "Bonjour!", // French
+      "¡Buenos días!", // Spanish
+      "Selamat Pagi!", // Indonesian
+      "おはようございます", // Japanese
+      "좋은 아침입니다", // Korean
+      "صباح الخير", // Arabic
+      "早上好", // Mandarin
+    ];
+  } else if (hour >= 12 && hour < 18) {
+    return [
+      "Good Afternoon!", // English
+      "Guten Tag!", // German
+      "Goedemiddag!", // Dutch
+      "Bon après-midi!", // French
+      "¡Buenas tardes!", // Spanish
+      "Selamat Siang!", // Indonesian
+      "こんにちは", // Japanese
+      "좋은 오후입니다", // Korean
+      "مساء الخير", // Arabic
+      "下午好", // Mandarin
+    ];
+  } else {
+    return [
+      "Good Evening!", // English
+      "Guten Abend!", // German
+      "Goedenavond!", // Dutch
+      "Bonsoir!", // French
+      "¡Buenas noches!", // Spanish
+      "Selamat Malam!", // Indonesian
+      "こんばんは", // Japanese
+      "좋은 저녁입니다", // Korean
+      "مساء الخير", // Arabic
+      "晚上好", // Mandarin
+    ];
+  }
+}
+
 export const Greeting = () => {
   const [opacity, setOpacity] = useState(1);
   const [isVisible, setIsVisible] = useState(true);
-  const [greeting, setGreeting] = useState<string[]>(getGreeting());
+  const [greeting, setGreeting] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
 
-  function getGreeting(): string[] {
-    const hour = dayjs().hour();
-
-    if (hour >= 5 && hour < 12) {
-      return [
-        "Good Morning!", // English
-        "Guten Morgen!", // German
-        "Goedemorgen!", // Dutch
-        "Bonjour!", // French
-        "¡Buenos días!", // Spanish
-        "Selamat Pagi!", // Indonesian
-        "おはようございます", // Japanese
-        "좋은 아침입니다", // Korean
-        "صباح الخير", // Arabic
-        "早上好", // Mandarin
-      ];
-    } else if (hour >= 12 && hour < 18) {
-      return [
-        "Good Afternoon!", // English
-        "Guten Tag!", // German
-        "Goedemiddag!", // Dutch
-        "Bon après-midi!", // French
-        "¡Buenas tardes!", // Spanish
-        "Selamat Siang!", // Indonesian
-        "こんにちは", // Japanese
-        "좋은 오후입니다", // Korean
-        "مساء الخير", // Arabic
-        "下午好", // Mandarin
-      ];
-    } else {
-      return [
-        "Good Evening!", // English
-        "Guten Abend!", // German
-        "Goedenavond!", // Dutch
-        "Bonsoir!", // French
-        "¡Buenas noches!", // Spanish
-        "Selamat Malam!", // Indonesian
-        "こんばんは", // Japanese
-        "좋은 저녁입니다", // Korean
-        "مساء الخير", // Arabic
-        "晚上好", // Mandarin
-      ];
-    }
-  }
+  // Set mounted flag
+  useEffect(() => {
+    setMounted(true);
+    setGreeting(getGreeting());
+  }, []);
 
   useEffect(() => {
-    setGreeting(getGreeting());
+    if (!mounted) return;
+
     const interval = setInterval(() => {
       setGreeting(getGreeting());
     }, 30 * 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      // Make the transition smoother by adjusting the calculation
       const newOpacity = Math.max(0, 1 - currentScrollY / 400);
       setOpacity(newOpacity);
 
-      // Only hide completely when fully scrolled
       if (currentScrollY > 500) {
-        // Give more buffer before hiding
         setIsVisible(false);
       } else {
         setIsVisible(true);
@@ -150,7 +171,8 @@ export const Greeting = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (!isVisible && opacity <= 0) return null;
+  // Don't render until mounted on client
+  if (!mounted || (!isVisible && opacity <= 0)) return null;
 
   return (
     <motion.div
@@ -169,18 +191,19 @@ export const Greeting = () => {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="text-4xl md:text-6xl font-bold font-comfortaa text-heading mb-4"
         >
-          <TypeIt
-            key={greeting.join(",")}
-            options={{
-              strings: [...greeting],
-              speed: 150,
-              waitUntilVisible: true,
-              loop: true,
-              breakLines: false,
-              deleteSpeed: 75,
-                
-            }}
-          />
+          {greeting.length > 0 && (
+            <TypeIt
+              key={greeting.join(",")}
+              options={{
+                strings: [...greeting],
+                speed: 150,
+                waitUntilVisible: true,
+                loop: true,
+                breakLines: false,
+                deleteSpeed: 75,
+              }}
+            />
+          )}
         </motion.h1>
 
         <motion.p

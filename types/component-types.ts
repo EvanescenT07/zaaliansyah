@@ -1,6 +1,12 @@
 import { LucideIcon } from "lucide-react";
 import { MotionValue } from "framer-motion";
 
+export interface ModalProviderProps {
+  children: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
 interface NavbarItemProps {
   name: string;
   url: string;
@@ -80,5 +86,3 @@ export interface useConfirmationModalProps {
   cancelText?: string;
   type?: "default" | "danger" | "warning";
 }
-
-

@@ -76,7 +76,7 @@
 
   /* Role: Surface -> Cyan Frost (#A5F3FC) */
   --secondary: oklch(93.73% 0.08 193);
-  --muted: oklch(93.73% 0.08 193);
+  --muted: oklch(96.47% 0 0);
   --accent: oklch(96.47% 0 0);
 
   /* Role: Subtle Accent -> Deep Cyan (#0E7490) */

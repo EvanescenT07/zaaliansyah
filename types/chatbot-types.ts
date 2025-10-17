@@ -12,7 +12,7 @@ export interface ChatbotMessageProps {
 
 export interface ChatbotProps {
   message: ChatbotMessageProps;
-  now: Date;
+  now: Date | null;
   isNew?: boolean;
   listEndRef: React.RefObject<HTMLDivElement | null>;
   isDelivered?: boolean;

@@ -9,6 +9,7 @@ import { Logo } from "@/components/layout/logo";
 import { Toaster } from "react-hot-toast";
 import { FloatingChatbot } from "@/components/chatbot/chatbot";
 import { getBaseUrl } from "@/lib/site";
+import { WelcomeModal } from "@/components/overlay/welcome-modal";
 
 const comfortaa = Comfortaa({
   variable: "--font-comfortaa",
@@ -127,6 +128,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster />
           <AudioProvider>
+            <WelcomeModal />
             <Navbar />
             <AudioSettingsModal />
             <Logo />
