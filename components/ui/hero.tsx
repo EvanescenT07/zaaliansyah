@@ -222,7 +222,7 @@ export const Hero = () => {
               y: 0,
               transition: { duration: 0.6, ease: "easeOut" },
             }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             className="mb-16 xl:mb-32"
           >
             <Project />
@@ -250,7 +250,7 @@ export const Hero = () => {
               y: 0,
               transition: { duration: 0.6, ease: "easeOut" },
             }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             className="mb-16 xl:mb-32"
           >
             <ContactMe />
