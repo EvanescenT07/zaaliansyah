@@ -29,3 +29,23 @@ export interface MarkdownProps {
   content: string;
   isBot: boolean;
 }
+
+export type ChatRole = "system" | "user" | "assistant";
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
+
+export interface ChatRequest {
+  messages: unknown;
+}
+
+export interface ErrorResponse {
+  error: string;
+  code?: string;
+}
+
+export interface SuccessResponse {
+  messages: string;
+}

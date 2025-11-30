@@ -1,165 +1,280 @@
+import {
+  ChatMessage,
+  ChatRequest,
+  ChatRole,
+  ErrorResponse,
+  SuccessResponse,
+} from "@/types/chatbot-types";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const API_KEY = process.env.CHATBOT_API_KEY;
-const BASE_URL = process.env.OPENAI_API_BASE_URL;
-const MODEL = process.env.CHATBOT_MODEL;
+// Configuration & Constants
+const CONFIG = {
+  API_KEY: process.env.CHATBOT_API_KEY,
+  BASE_URL: process.env.OPENAI_API_BASE_URL,
+  MODEL: process.env.CHATBOT_MODEL,
+  SITE_URL: process.env.SITE_URL || "http://localhost:3000/",
+  MAX_CONTENT_LENGTH: 16000,
+  RATE_LIMIT: {
+    WINDOW_MS: 6000,
+    MAX_REQUESTS: 60,
+  },
+} as const;
 
-const client = new OpenAI({
-  apiKey: API_KEY,
-  baseURL: BASE_URL,
+const SYSTEM_PROMPT =
+  `You are CaffBot, a helpful AI assistant for Fikar's portfolio website.
+
+Your role:
+- Help visitors learn about Fikar's experience, projects, and skills
+- Answer questions concisely and professionally
+- Keep responses brief (2-3 sentences max unless more detail is requested)
+- If questions are unrelated to the portfolio, provide brief, helpful responses
+
+Guidelines:
+- Be friendly, professional, and conversational
+- Use markdown formatting for better readability
+- Avoid toxic, hateful, violent, discriminatory, political, religious, adult, sexual, drug-related, illegal, or self-harm content
+- If you don't know something about Fikar, admit it honestly
+
+Remember: You're representing Fikar's professional brand.` as const;
+
+// OpenAI Client Initialization
+const openrouter = new OpenAI({
+  apiKey: CONFIG.API_KEY,
+  baseURL: CONFIG.BASE_URL,
   defaultHeaders: {
-    "HTTP-Referer": process.env.SITE_URL || "http://localhost:3000",
-    "X-Title": "Portfolio Chatbot",
+    "HTTP-Referer": CONFIG.SITE_URL,
+    "X-Title": "CaffBot Portfolio Assistant",
   },
 });
 
-const SYS_PROMPT =
-  "You are a helpful assistant that helps people find information about Fikar's portfolio website, including his experience, projects, and skills. Answer concisely. If the question is not related to the portfolio, keep it brief. Avoid toxic/hate/violence/racist/discrimination/political/religion/adult/sexual/drugs/illegal/self-harm.";
-
-type ChatRole = "system" | "user" | "assistant";
-type ChatMsg = { role: ChatRole; content: string };
-type ChatRequest = { messages: unknown };
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null;
-}
-
-function toRole(v: unknown): Exclude<ChatRole, "system"> {
-  const r = typeof v === "string" ? v.toLowerCase() : "";
-  return r === "assistant" ? "assistant" : "user";
-}
-
-function toContent(v: unknown): string {
-  return String(v ?? "").slice(0, 16000);
-}
-
-function normalizeMessages(input: unknown): ChatMsg[] {
+/**
+ * Validates and normalizes incoming messages
+ */
+function normalizeMessages(input: unknown): ChatMessage[] {
   if (!Array.isArray(input)) return [];
-  return input.map((m: unknown) => {
-    const role = isObject(m) ? toRole(m.role) : "user";
-    const content = isObject(m) ? toContent(m.content) : "";
-    return { role, content };
-  });
+
+  return input
+    .filter((msg): msg is Record<string, unknown> => {
+      return typeof msg === "object" && msg !== null;
+    })
+    .map((msg) => {
+      const role = String(msg.role || "user").toLowerCase();
+      const content = String(msg.content || "").slice(
+        0,
+        CONFIG.MAX_CONTENT_LENGTH
+      );
+
+      return {
+        role: (role === "assistant" ? "assistant" : "user") as Exclude<
+          ChatRole,
+          "system"
+        >,
+        content: content.trim(),
+      };
+    })
+    .filter((msg) => msg.content.length > 0);
 }
 
-const isProd = process.env.NODE_ENV === "production";
-const windowMs = 60_000;
-const maxReq = 30;
-const hits = new Map<string, { count: number; ts: number }>();
+/**
+ * Extracts IP address from request headers
+ */
+function getClientIP(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip =
+    forwarded?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "anonymous";
+  return ip;
+}
 
-function rateLimited(ip: string): boolean {
-  if (!isProd) return false;
-  const now = Date.now();
-  const rec = hits.get(ip);
-  if (!rec || now - rec.ts > windowMs) {
-    hits.set(ip, { count: 1, ts: now });
+/**
+ * Extracts error details for logging and response
+ */
+function extractErrorDetails(err: unknown): {
+  status: number;
+  message: string;
+  code?: string;
+} {
+  // Handle OpenAI/OpenRouter specific errors
+  if (err && typeof err === "object") {
+    const error = err as Record<string, unknown>;
+
+    // Check for status code
+    const status =
+      typeof error.status === "number"
+        ? error.status
+        : typeof error.code === "number"
+        ? error.code
+        : 500;
+
+    // Extract message
+    let message = "An unexpected error occurred";
+
+    if (error.message && typeof error.message === "string") {
+      message = error.message;
+    } else if (error.error && typeof error.error === "object") {
+      const errObj = error.error as Record<string, unknown>;
+      if (typeof errObj.message === "string") {
+        message = errObj.message;
+      }
+    }
+
+    // Map status codes to user-friendly messages
+    const statusMessages: Record<number, string> = {
+      400: "Invalid request format",
+      401: "Authentication failed",
+      403: "Access forbidden",
+      429: "Too many requests. Please wait a moment and try again.",
+      500: "Server error. Please try again later.",
+      503: "Service temporarily unavailable",
+    };
+
+    const userMessage = statusMessages[status] || message;
+    const code = typeof error.code === "string" ? error.code : undefined;
+
+    return { status, message: userMessage, code };
+  }
+
+  return { status: 500, message: "Failed to process your request" };
+}
+
+// ============================================================================
+// Rate Limiting
+// ============================================================================
+
+class RateLimiter {
+  private hits = new Map<string, { count: number; timestamp: number }>();
+  private readonly isProd = process.env.NODE_ENV === "production";
+
+  check(ip: string): boolean {
+    if (!this.isProd) return false; // No rate limiting in development
+
+    const now = Date.now();
+    const record = this.hits.get(ip);
+
+    // Reset if window expired
+    if (!record || now - record.timestamp > CONFIG.RATE_LIMIT.WINDOW_MS) {
+      this.hits.set(ip, { count: 1, timestamp: now });
+      return false;
+    }
+
+    // Check if limit exceeded
+    if (record.count >= CONFIG.RATE_LIMIT.MAX_REQUESTS) {
+      return true;
+    }
+
+    // Increment counter
+    record.count++;
     return false;
   }
-  if (rec.count >= maxReq) return true;
-  rec.count += 1;
-  return false;
-}
 
-async function callModel(model: string, messages: ChatMsg[]) {
-  return client.chat.completions.create({
-    model,
-    messages: [{ role: "system", content: SYS_PROMPT }, ...messages],
-    temperature: 0.6,
-  });
-}
-
-function getNumber(v: unknown): number | undefined {
-  return typeof v === "number" ? v : undefined;
-}
-
-function getStatusFromError(err: unknown): number {
-  if (isObject(err)) {
-    const status = getNumber((err as Record<string, unknown>).status);
-    if (status) return status;
-    const code = getNumber((err as Record<string, unknown>).code);
-    if (code) return code;
-    const resp = (err as Record<string, unknown>).response;
-    if (isObject(resp)) {
-      const rStatus = getNumber(resp.status);
-      if (rStatus) return rStatus;
+  // Cleanup old entries periodically
+  cleanup(): void {
+    const now = Date.now();
+    for (const [ip, record] of this.hits.entries()) {
+      if (now - record.timestamp > CONFIG.RATE_LIMIT.WINDOW_MS) {
+        this.hits.delete(ip);
+      }
     }
   }
-  return 500;
 }
 
-function getMessageFromError(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (isObject(err) && typeof err.message === "string") return err.message;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return "Unknown error";
-  }
-}
+const rateLimiter = new RateLimiter();
 
-export async function POST(req: Request) {
+// Cleanup rate limiter every 5 minutes
+setInterval(() => rateLimiter.cleanup(), 5 * 60 * 1000);
+
+// ============================================================================
+// Main Handler
+// ============================================================================
+
+export async function POST(
+  req: Request
+): Promise<NextResponse<ErrorResponse | SuccessResponse>> {
   try {
-    if (!API_KEY || !BASE_URL || !MODEL) {
+    // 1. Validate environment configuration
+    if (!CONFIG.API_KEY || !CONFIG.BASE_URL || !CONFIG.MODEL) {
+      console.error("Missing environment variables:", {
+        hasApiKey: !!CONFIG.API_KEY,
+        hasBaseUrl: !!CONFIG.BASE_URL,
+        hasModel: !!CONFIG.MODEL,
+      });
+
       return NextResponse.json(
-        {
-          error: "Server misconfiguration: missing API key, base URL, or model",
-        },
-        { status: 500 }
+        { error: "Service temporarily unavailable. Please try again later." },
+        { status: 503 }
       );
     }
 
-    const ip =
-      (req.headers.get("x-forwarded-for") || "").split(",")[0]?.trim() ||
-      "anon";
-    if (rateLimited(ip)) {
+    // 2. Rate limiting
+    const clientIP = getClientIP(req);
+    if (rateLimiter.check(clientIP)) {
       return NextResponse.json(
-        { error: "Too many requests, slow down." },
+        {
+          error: "Too many requests. Please wait a moment before trying again.",
+          code: "RATE_LIMIT_EXCEEDED",
+        },
         { status: 429 }
       );
     }
 
-    const body = (await req.json().catch(() => null)) as ChatRequest | null;
-    const userMessages = normalizeMessages(body?.messages);
+    // 3. Parse and validate request body
+    let body: ChatRequest;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
+
+    const userMessages = normalizeMessages(body.messages);
 
     if (userMessages.length === 0) {
       return NextResponse.json(
         {
-          error:
-            "Invalid message format. Expected { messages: Array<{role,content}> }",
+          error: "Please provide at least one message",
+          code: "NO_MESSAGES",
         },
         { status: 400 }
       );
     }
 
-    // Single API call - no retries
-    try {
-      const resp = await callModel(MODEL, userMessages);
-      const assistant = resp.choices?.[0]?.message?.content ?? "";
-      return NextResponse.json({ messages: assistant });
-    } catch (e: unknown) {
-      const status = getStatusFromError(e);
-      const msg =
-        status === 429
-          ? "Rate limit exceeded, try again shortly."
-          : "Failed to process request";
-      try {
-        const safeMsg = getMessageFromError(e);
-        console.error("Chat API error:", status, safeMsg);
-      } catch {
-        console.error("Chat API error, unable to parse error message");
-      }
-      return NextResponse.json({ error: msg }, { status });
+    // 4. Call OpenRouter API
+    const completion = await openrouter.chat.completions.create({
+      model: CONFIG.MODEL,
+      messages: [{ role: "system", content: SYSTEM_PROMPT }, ...userMessages],
+      temperature: 0.7,
+      max_tokens: 500, // Limit response length for conciseness
+    });
+
+    const assistantMessage = completion.choices?.[0]?.message?.content?.trim();
+
+    if (!assistantMessage) {
+      console.error("Empty response from OpenRouter");
+      return NextResponse.json(
+        { error: "Received empty response. Please try again." },
+        { status: 500 }
+      );
     }
-  } catch (e: unknown) {
-    try {
-      console.error("Chat route fatal error:", getMessageFromError(e));
-    } catch {
-      console.error("Chat route fatal error, unable to parse error message");
-    }
+
+    // 5. Return success response
+    return NextResponse.json({ messages: assistantMessage });
+  } catch (error: unknown) {
+    const { status, message, code } = extractErrorDetails(error);
+
+    console.error("Chat API error:", {
+      status,
+      message,
+      code,
+      timestamp: new Date().toISOString(),
+    });
+
     return NextResponse.json(
-      { error: "Failed to process request" },
-      { status: 500 }
+      { error: message, ...(code && { code }) },
+      { status }
     );
   }
 }

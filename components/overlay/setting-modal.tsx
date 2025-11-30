@@ -68,7 +68,7 @@ export const AudioSettingsModal = () => {
 
   return (
     <Modal>
-      <ModalTrigger className="fixed top-6 lg:right-12 right-6 z-51 p-3 bg-foreground/5 backdrop-blur-md rounded-full hover:bg-accent transition-all duration-500 shadow-lg hover:shadow-xl group cursor-pointer">
+      <ModalTrigger className="fixed top-6 lg:right-12 right-6 z-50 p-3 bg-foreground/5 backdrop-blur-md rounded-full hover:bg-accent transition-all duration-500 shadow-lg hover:shadow-xl group cursor-pointer">
         <div className="relative">
           <Settings className="h-5 w-5 group-hover:animate-spin transition-transform duration-500" />
           {isPlaying && (

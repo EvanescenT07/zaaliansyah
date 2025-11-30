@@ -3,11 +3,13 @@ import Marquee from "react-fast-marquee";
 import {
   SiAmazonwebservices,
   SiBun,
+  SiDart,
   SiDocker,
   SiExpress,
   SiFastapi,
   SiFigma,
   SiFlask,
+  SiFlutter,
   SiGit,
   SiGithub,
   SiGithubcopilot,
@@ -41,9 +43,14 @@ import {
 const TechRowOne: TechnStackProps = {
   SkillList: [
     {
-      id: 1,
+      id: 0,
       icon: <SiTypescript />,
       name: "TypeScript",
+    },
+    {
+      id: 1,
+      icon: <SiDart />,
+      name: "Dart",
     },
     {
       id: 2,
@@ -57,46 +64,51 @@ const TechRowOne: TechnStackProps = {
     },
     {
       id: 4,
+      icon: <SiFlutter />,
+      name: "Flutter",
+    },
+    {
+      id: 5,
       icon: <SiNextdotjs />,
       name: "Next.JS",
     },
     {
-      id: 5,
+      id: 6,
       icon: <SiReact />,
       name: "ReactJS",
     },
     {
-      id: 6,
+      id: 7,
       icon: <SiLaravel />,
       name: "Laravel",
     },
     {
-      id: 7,
+      id: 8,
       icon: <SiExpress />,
       name: "ExpressJS",
     },
     {
-      id: 8,
+      id: 9,
       icon: <SiMongodb />,
       name: "MongoDB",
     },
     {
-      id: 9,
+      id: 10,
       icon: <SiPostgresql />,
       name: "PostgreSQL",
     },
     {
-      id: 10,
+      id: 11,
       icon: <SiMysql />,
       name: "MySQL",
     },
     {
-      id: 11,
+      id: 12,
       icon: <SiNodedotjs />,
       name: "Node.js",
     },
     {
-      id: 12,
+      id: 13,
       icon: <SiBun />,
       name: "Bun",
     },

@@ -20,13 +20,24 @@ export const Experience = () => {
 
   const CareerData: CareerProps[] = [
     {
+      logo: "/assets/_logoaxamandiri.png",
+      href: "https://mypage.axa.co.id/",
+      status: "Internship",
+      company: "PT AXA Mandiri Financial Services",
+      position: "System Development",
+      division: "IT System Development Division",
+      period: "Nov 2025 - Present",
+      location: "South Jakarta",
+      description: "TBA",
+    },
+    {
       logo: "/assets/_logosmbci.png",
       href: "https://www.smbc.co.id/",
       status: "Internship",
       company: "PT Bank SMBC Indonesia Tbk",
-      position: "System Administration Management Intern",
+      position: "System Administration Management",
       division: "SAM Division",
-      period: "Feb 2025 - Present",
+      period: "Feb 2025 - Nov 2025",
       location: "South Jakarta",
       description:
         "As a proactive member of an Agile team, I was deeply involved in the entire software development lifecycle, from sprint planning to final release. I played a key role in shaping our product's direction by authoring over 20 user stories and backlog items, which directly led to new feature releases. Working in close support of the Product Owner, I helped prioritize development efforts and ensured features aligned with user requirements by executing detailed User Acceptance Testing (UAT). To support the team's long-term success, I also developed more than 7 technical documents for internal applications and actively contributed to initiatives that improved our overall team culture and processes.",
