@@ -136,12 +136,12 @@ export const Hero = () => {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: false, amount: 0.3 }}
-                className="flex flex-col xl:flex-row items-center gap-4"
+                className="flex flex-col xl:flex-col-reverse items-center xl:items-start gap-4"
               >
                 <Button
                   variant="default"
                   size="lg"
-                  className="flex items-center gap-2"
+                  className="w-[248px] flex items-center gap-2"
                   onClick={downloadCVHandler}
                   loading={downloading}
                   disabled={downloading}

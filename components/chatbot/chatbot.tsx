@@ -330,7 +330,7 @@ export const FloatingChatbot = () => {
   }, [message.length, scrollToBottom]);
 
   return (
-    <div className="fixed lg:right-12 right-6 bottom-24 sm:bottom-10 md:bottom-10 z-50">
+    <div className="fixed lg:right-12 right-6 bottom-24 sm:bottom-10 md:bottom-10 z-49">
       {modalProps && (
         <ModalConfirmation
           isOpen={isModalOpen}
