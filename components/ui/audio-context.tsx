@@ -26,7 +26,7 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentTrack = tracks[currentTrackIndex] || null;
 
-  // Memoize functions to prevent unnecessary re-renders
+  // Stable function references using useCallback
   const play = useCallback(() => setIsPlaying(true), []);
   const pause = useCallback(() => setIsPlaying(false), []);
   const togglePlay = useCallback(() => setIsPlaying((prev) => !prev), []);
@@ -40,21 +40,24 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // Wrap next in useCallback with proper dependencies
   const next = useCallback(() => {
     if (shuffle) {
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * tracks.length);
-      } while (randomIndex === currentTrackIndex && tracks.length > 1);
-      setCurrentTrackIndex(randomIndex);
+      setCurrentTrackIndex((prevIndex) => {
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * tracks.length);
+        } while (randomIndex === prevIndex && tracks.length > 1);
+        return randomIndex;
+      });
     } else {
       setCurrentTrackIndex((prevIndex) => (prevIndex + 1) % tracks.length);
     }
-  }, [shuffle, tracks.length, currentTrackIndex]);
+  }, [shuffle, tracks.length]);
 
   const previous = useCallback(() => {
     setCurrentTrackIndex(
-      (prevIndex) => (prevIndex - 1 + tracks.length) % tracks.length
+      (prevIndex) => (prevIndex - 1 + tracks.length) % tracks.length,
     );
   }, [tracks.length]);
 
@@ -79,25 +82,29 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isPlaying]);
 
-  // Track Change Handler
+  // Track Change Handler - use ref to track if we need to auto-play
+  const wasPlayingRef = useRef(false);
+
+  useEffect(() => {
+    wasPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
   useEffect(() => {
     if (audioRef.current && currentTrack) {
-      const wasPlaying = isPlaying;
+      const shouldAutoPlay = wasPlayingRef.current;
 
-      setCurrentTime(0);
-      setDuration(0);
-
+      // Reset time tracking via audio element events, not direct setState
       audioRef.current.src = currentTrack.src;
       audioRef.current.load();
 
-      if (wasPlaying) {
+      if (shouldAutoPlay) {
         audioRef.current.play().catch((error) => {
           console.error("Error playing audio:", error);
           setIsPlaying(false);
         });
       }
     }
-  }, [currentTrackIndex, currentTrack, isPlaying]);
+  }, [currentTrackIndex, currentTrack]);
 
   // Audio event listeners
   useEffect(() => {
@@ -110,6 +117,7 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
+      setCurrentTime(0); // Reset on new track load via event
     };
 
     const handleDurationChange = () => {
@@ -131,7 +139,7 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
       audio.removeEventListener("durationchange", handleDurationChange);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [next]); // ✅ Include 'next' in dependencies
+  }, [next]);
 
   return (
     <AudioContext.Provider

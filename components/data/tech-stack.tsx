@@ -15,6 +15,7 @@ import {
   SiGithubcopilot,
   SiGooglegemini,
   SiJavascript,
+  SiJira,
   SiJupyter,
   SiKeras,
   SiLaragon,
@@ -196,6 +197,11 @@ const TechRowThree: TechnStackProps = {
       id: 21,
       icon: <SiGit />,
       name: "Git",
+    },
+    {
+      id: 30,
+      icon: <SiJira />,
+      name: "Jira",
     },
     {
       id: 22,

@@ -78,3 +78,13 @@ export interface ContactProps {
   title: string;
   value: string;
 }
+
+export interface ParticlePropss {
+  width: number;
+  height: number;
+  background: string;
+  opacity: number;
+  initial: { x: number; y: number; scale: number; rotate: number };
+  animate: { x: number[]; y: number[]; scale: number[]; rotate: number[] };
+  transition: { duration: number; delay: number };
+}

@@ -31,7 +31,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       <div
         className={cn(
           "w-16 h-8 rounded-full bg-gray-200 dark:bg-gray-700",
-          className
+          className,
         )}
       />
     );
@@ -45,7 +45,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         isDark
           ? "bg-black/20 border-white/10"
           : "bg-background/20 border-black/5 shadow-2xl",
-        className
+        className,
       )}
       onClick={ThemeToggleHandler}
       tabIndex={0}
@@ -59,13 +59,13 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
             "flex justify-center items-center w-6 h-6 rounded-full transition-all duration-500",
             isDark
               ? "transform translate-x-0 backdrop-blur-sm border bg-background/10 border-white/20 shadow-lg"
-              : "transform translate-x-8 bg-transparent"
+              : "transform translate-x-8 bg-transparent",
           )}
         >
           <Moon
             className={cn(
               "w-4 h-4",
-              isDark ? "text-foreground" : "text-black/30"
+              isDark ? "text-foreground" : "text-black/30",
             )}
             strokeWidth={2}
           />
@@ -75,13 +75,13 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
             "flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-500",
             isDark
               ? "bg-transparent"
-              : "transform -translate-x-8 backdrop-blur-sm border bg-black/10 border-black/20 shadow-lg"
+              : "transform -translate-x-8 backdrop-blur-sm border bg-black/10 border-black/20 shadow-lg",
           )}
         >
           <Sun
             className={cn(
               "w-4 h-4",
-              isDark ? "text-foreground/30" : "text-black"
+              isDark ? "text-foreground/30" : "text-black",
             )}
             strokeWidth={2}
           />

@@ -1,4 +1,3 @@
-// filepath: d:\Documents\Fikar\Project\portfoliov3\components\overlay\setting-modal.tsx
 "use client";
 import { Settings } from "lucide-react";
 import { useAudioContext } from "@/components/ui/audio-context";

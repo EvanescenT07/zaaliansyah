@@ -145,7 +145,7 @@ export const Project = () => {
               <div className="flex gap-4 justify-center xl:justify-start">
                 {isProject.techStack.map((tech) => (
                   <div key={tech.name}>
-                    {typeof window !== "undefined" && (
+                  
                       <TooltipProvider delayDuration={100}>
                         <Tooltip>
                           <TooltipTrigger>
@@ -160,7 +160,7 @@ export const Project = () => {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                    )}
+                    
                   </div>
                 ))}
               </div>
@@ -226,7 +226,7 @@ export const Project = () => {
                 pagination={false}
                 loop={true}
                 onSlideChange={handleSlideChange}
-                onSwiper={(sw) => setIsProject(projectItems[sw.realIndex])}
+                onSwiper={(sw: SwiperType) => setIsProject(projectItems[sw.realIndex])}
                 className="xl:h-[380px] h-[300px] rounded-xl"
               >
                 {projectItems.map((item) => (
