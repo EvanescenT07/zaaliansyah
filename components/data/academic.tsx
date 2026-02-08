@@ -14,7 +14,7 @@ export const Academic = () => {
     degree: "Bachelor Degree",
     major: "Informatics - AI Concentration",
     logo: "/assets/_logopresuniv.png",
-    year: "Sep 2022 - Aug 2025 (Unofficially Graduated)",
+    year: "Sep 2022 - Dec 2025",
     location: "Jababeka, Cikarang Utara",
   };
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useTimestamp } from "@/hooks/timestamp";
 import { ChatbotProps } from "@/types/chatbot-types";
 import { ChatMarkdown } from "@/components/chatbot/chat-markdown";
@@ -14,25 +14,51 @@ export const MessageBubble = ({
 }: ChatbotProps) => {
   const isBot = message.role === "assistant";
   const time = useTimestamp(message.createdAt, now);
-  const [displayed, setDisplayed] = useState(
-    isBot && isNew ? "" : message.content
-  );
-  const timerRef = useRef<number | null>(null);
 
+  // Calculate initial displayed text synchronously
+  const initialDisplayed = useMemo(() => {
+    return isBot && isNew ? "" : message.content;
+  }, [isBot, isNew, message.content]);
+
+  const [displayed, setDisplayed] = useState(initialDisplayed);
+  const timerRef = useRef<number | null>(null);
+  const animationCompleteRef = useRef(!isBot || !isNew);
+
+  // Sync displayed state when message content changes (for non-animated cases)
   useEffect(() => {
-    if (!(isBot && isNew)) {
-      setDisplayed(message.content);
+    if (!isBot || !isNew) {
+      // Only update if different to avoid unnecessary renders
+      if (displayed !== message.content) {
+        setDisplayed(message.content);
+      }
+      animationCompleteRef.current = true;
+    }
+  }, [isBot, isNew, message.content, displayed]);
+
+  // Handle typewriter animation separately
+  useEffect(() => {
+    // Skip if not an animated bot message or animation already complete
+    if (!(isBot && isNew) || animationCompleteRef.current) {
       return;
     }
+
     const full = message.content;
     let i = 0;
+
     const step = () => {
       i = Math.min(i + 2, full.length);
       setDisplayed(full.slice(0, i));
       listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-      if (i < full.length) timerRef.current = window.setTimeout(step, 32);
+
+      if (i < full.length) {
+        timerRef.current = window.setTimeout(step, 32);
+      } else {
+        animationCompleteRef.current = true;
+      }
     };
+
     step();
+
     return () => {
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
@@ -42,6 +68,7 @@ export const MessageBubble = ({
     if (displayed !== message.content) {
       if (timerRef.current) window.clearTimeout(timerRef.current);
       setDisplayed(message.content);
+      animationCompleteRef.current = true;
       listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   };

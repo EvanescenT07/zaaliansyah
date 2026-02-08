@@ -33,7 +33,7 @@ const siteURL = getBaseUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteURL),
-  title: "Portfolio | Aliansyah",
+  title: "Zulfikar Ahmad Aliansyah | Portfolio",
   description:
     "Portfolio of Zulfikar Ahmad Aliansyah, an Unofficial Informatics Graduate from President University specializing in Artificial Intelligence (Python, and YOLO) and modern Frontend Development (Next.js, TypeScript). My location based in Jakarta. Let's connect!",
   icons: {
@@ -116,12 +116,31 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Person",
               name: "Zulfikar Ahmad Aliansyah",
+              alternateName: ["Zulfikar", "Aliansyah", "Fikar"],
               url: siteURL,
+              image: `${siteURL}/assets/profile.png`,
+              description:
+                "Software Developer specializing in AI/ML and Frontend Development",
+              alumniOf: {
+                "@type": "CollegeOrUniversity",
+                name: "President University",
+              },
+              knowsAbout: [
+                "Artificial Intelligence",
+                "Next.js",
+                "Flutter",
+                "TypeScript",
+              ],
               sameAs: [
                 "https://github.com/EvanescenT07",
                 "https://www.linkedin.com/in/zulfikarahmad12",
+                "https://www.instagram.com/zulfikarahmad12/",
               ],
-              jobTitle: "Information Technology",
+              jobTitle: "Software Developer",
+              worksFor: {
+                "@type": "Organization",
+                name: "PT AXA Mandiri Financial Services",
+              },
             }),
           }}
         />

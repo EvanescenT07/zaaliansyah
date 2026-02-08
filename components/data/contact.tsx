@@ -1,7 +1,7 @@
 import { ContactProps } from "@/types/data-types";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import emailjs from "emailjs-com";
+import emailjs from "@emailjs/browser";
 import {
   FaEnvelope,
   FaLinkedinIn,

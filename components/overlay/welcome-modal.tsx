@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useAudioContext } from "@/components/ui/audio-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { Music, VolumeX, Play, Pause } from "lucide-react";
@@ -10,6 +10,7 @@ export const WelcomeModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
   const { currentTrack, play, pause, next } = useAudioContext();
+  const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Show modal on every session (no localStorage)
   useEffect(() => {
@@ -20,21 +21,25 @@ export const WelcomeModal = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Random shuffle on mount
   useEffect(() => {
-    // Generate random number between 0-3 (or however many times you want to shuffle)
     const randomSkips = Math.floor(Math.random() * 5);
     for (let i = 0; i < randomSkips; i++) {
       next();
     }
   }, [next]);
 
-  // Cleanup preview when modal closes
+  // Cleanup preview when modal closes - use callback to handle state change
+  const stopPreview = useCallback(() => {
+    pause();
+    setIsPreviewPlaying(false);
+  }, [pause]);
+
   useEffect(() => {
     if (!isOpen && isPreviewPlaying) {
-      pause();
-      setIsPreviewPlaying(false);
+      stopPreview();
     }
-  }, [isOpen, isPreviewPlaying, pause]);
+  }, [isOpen, isPreviewPlaying, stopPreview]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -49,8 +54,6 @@ export const WelcomeModal = () => {
   }, [isOpen]);
 
   // Handle preview play/pause
-  const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const togglePreview = (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -63,11 +66,11 @@ export const WelcomeModal = () => {
     }
   };
 
+  // Preview timeout effect
   useEffect(() => {
     if (isPreviewPlaying) {
       previewTimeoutRef.current = setTimeout(() => {
-        pause();
-        setIsPreviewPlaying(false);
+        stopPreview();
       }, 10000);
     }
 
@@ -77,7 +80,7 @@ export const WelcomeModal = () => {
         previewTimeoutRef.current = null;
       }
     };
-  }, [isPreviewPlaying, pause]);
+  }, [isPreviewPlaying, stopPreview]);
 
   // Handle user choice
   const handlePlayMusic = (e: React.MouseEvent) => {
@@ -105,10 +108,8 @@ export const WelcomeModal = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 bg-background/39 backdrop-blur-sm z-90"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLDivElement>) => {
               e.stopPropagation();
-              // Optionally prevent closing on backdrop click for important choice
-              // setIsOpen(false);
             }}
           />
 
@@ -120,7 +121,9 @@ export const WelcomeModal = () => {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="bg-background rounded-3xl shadow-2xl max-w-md w-full p-8 space-y-6 pointer-events-auto relative"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent<HTMLDivElement>) =>
+                e.stopPropagation()
+              }
             >
               {/* Header */}
               <div className="text-center space-y-3">

@@ -31,11 +31,11 @@ export const FloatingChatbot = () => {
   const [now, setNow] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [reactions, setReactions] = useState<{ [messageId: string]: string[] }>(
-    {}
+    {},
   );
   const [isRecording, setIsRecording] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<"en-US" | "id-ID">(
-    "en-US"
+    "en-US",
   );
 
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -85,7 +85,7 @@ export const FloatingChatbot = () => {
       try {
         const parsed: ChatbotMessageProps[] = JSON.parse(savedMessages);
         const withIds = parsed.map((m) =>
-          m.id ? m : { ...m, id: crypto.randomUUID() }
+          m.id ? m : { ...m, id: crypto.randomUUID() },
         );
         setMessage(withIds);
         localStorage.setItem("caffbot-messages", JSON.stringify(withIds));
@@ -123,7 +123,7 @@ export const FloatingChatbot = () => {
   const SearchMessage = useMemo(() => {
     if (!searchQuery) return message;
     return message.filter((msg) =>
-      msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+      msg.content.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [message, searchQuery]);
 
@@ -179,7 +179,7 @@ export const FloatingChatbot = () => {
     toast.success(
       `Language switched to ${
         newLanguage === "en-US" ? "English" : "Indonesian"
-      }`
+      }`,
     );
   };
 
@@ -233,7 +233,7 @@ export const FloatingChatbot = () => {
         newMessages.map(({ role, content }) => ({
           role,
           content,
-        }))
+        })),
       );
       // --- HIGHLIGHT END ---
       const botResponse: ChatbotMessageProps = {
@@ -312,7 +312,6 @@ export const FloatingChatbot = () => {
         setReactions({});
         localStorage.removeItem("caffbot-messages");
         toast.success("Chat cleared! Ready for a fresh start.");
-        closeModal();
       },
     });
   };
@@ -330,7 +329,7 @@ export const FloatingChatbot = () => {
   }, [message.length, scrollToBottom]);
 
   return (
-    <div className="fixed lg:right-12 right-6 bottom-24 sm:bottom-10 md:bottom-10 z-49">
+    <div className="fixed lg:right-12 right-6 bottom-24 sm:bottom-10 md:bottom-10 z-101">
       {modalProps && (
         <ModalConfirmation
           isOpen={isModalOpen}

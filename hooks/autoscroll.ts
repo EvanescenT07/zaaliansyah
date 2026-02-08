@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
-
 export function AutoScroll(listEndRef: React.RefObject<HTMLDivElement | null>) {
-  const scrollToBottom = useCallback(() => {
+  const scrollToBottom = () => {
     requestAnimationFrame(() => {
       listEndRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -11,14 +9,14 @@ export function AutoScroll(listEndRef: React.RefObject<HTMLDivElement | null>) {
         inline: "nearest",
       });
     });
-  }, [listEndRef]);
+  };
 
-  const scrollToTop = useCallback(() => {
+  const scrollToTop = () => {
     requestAnimationFrame(() => {
       const parent = listEndRef.current?.parentElement;
       if (parent) parent.scrollTop = 0;
     });
-  }, [listEndRef]);
+  };
 
   return { scrollToBottom, scrollToTop };
 }

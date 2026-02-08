@@ -1,64 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { BsChevronDoubleDown } from "react-icons/bs";
 import dayjs from "dayjs";
 import TypeIt from "typeit-react";
+import { ParticlePropss } from "@/types/data-types";
+
+
+// Generate particles function
+const generateParticles = (
+  theme: string | undefined,
+  windowWidth: number,
+  windowHeight: number,
+): ParticlePropss[] => {
+  return [...Array(45)].map(() => ({
+    width: Math.random() * 4 + 1,
+    height: Math.random() * 4 + 1,
+    background:
+      theme === "dark"
+        ? `hsl(${Math.random() * 60 + 200}, 70%, ${Math.random() * 30 + 50}%)`
+        : "rgba(0, 0, 0, 0.8)",
+    opacity: Math.random() * 0.6 + 0.3,
+    initial: {
+      x: Math.random() * windowWidth,
+      y: Math.random() * windowHeight,
+      scale: 0,
+      rotate: 0,
+    },
+    animate: {
+      x: [
+        Math.random() * windowWidth,
+        Math.random() * windowWidth,
+        Math.random() * windowWidth,
+      ],
+      y: [
+        Math.random() * windowHeight,
+        Math.random() * windowHeight,
+        Math.random() * windowHeight,
+      ],
+      scale: [0, 1, 0.8, 1, 0],
+      rotate: [0, 180, 360],
+    },
+    transition: {
+      duration: Math.random() * 20 + 15,
+      delay: Math.random() * 5,
+    },
+  }));
+};
 
 // Floating particles component
 const FloatingParticles = () => {
   const { theme } = useTheme();
-  const [particles, setParticles] = useState<
-    Array<{
-      width: number;
-      height: number;
-      background: string;
-      opacity: number;
-      initial: { x: number; y: number; scale: number; rotate: number };
-      animate: { x: number[]; y: number[]; scale: number[]; rotate: number[] };
-      transition: { duration: number; delay: number };
-    }>
-  >([]);
 
-  // Generate particles only on client side
+  // Use useMemo with a key to regenerate when theme changes
+  // Initial render will use empty array, then update after mount
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  // Get window size on mount (client-side only)
   useEffect(() => {
-    const generatedParticles = [...Array(45)].map(() => ({
-      width: Math.random() * 4 + 1,
-      height: Math.random() * 4 + 1,
-      background:
-        theme === "dark"
-          ? `hsl(${Math.random() * 60 + 200}, 70%, ${Math.random() * 30 + 50}%)`
-          : "rgba(0, 0, 0, 0.8)",
-      opacity: Math.random() * 0.6 + 0.3,
-      initial: {
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        scale: 0,
-        rotate: 0,
-      },
-      animate: {
-        x: [
-          Math.random() * window.innerWidth,
-          Math.random() * window.innerWidth,
-          Math.random() * window.innerWidth,
-        ],
-        y: [
-          Math.random() * window.innerHeight,
-          Math.random() * window.innerHeight,
-          Math.random() * window.innerHeight,
-        ],
-        scale: [0, 1, 0.8, 1, 0],
-        rotate: [0, 180, 360],
-      },
-      transition: {
-        duration: Math.random() * 20 + 15,
-        delay: Math.random() * 5,
-      },
-    }));
-    setParticles(generatedParticles);
-  }, [theme]);
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+  }, []);
+
+  // Generate particles using useMemo - only recalculates when dependencies change
+  const particles = useMemo(() => {
+    if (windowSize.width === 0) return [];
+    return generateParticles(theme, windowSize.width, windowSize.height);
+  }, [theme, windowSize.width, windowSize.height]);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -92,42 +104,42 @@ function getGreeting(): string[] {
 
   if (hour >= 5 && hour < 12) {
     return [
-      "Good Morning!", // English
-      "Guten Morgen!", // German
-      "Goedemorgen!", // Dutch
-      "Bonjour!", // French
-      "¡Buenos días!", // Spanish
-      "Selamat Pagi!", // Indonesian
-      "おはようございます", // Japanese
-      "좋은 아침입니다", // Korean
-      "صباح الخير", // Arabic
-      "早上好", // Mandarin
+      "Good Morning!",
+      "Guten Morgen!",
+      "Goedemorgen!",
+      "Bonjour!",
+      "¡Buenos días!",
+      "Selamat Pagi!",
+      "おはようございます",
+      "좋은 아침입니다",
+      "صباح الخير",
+      "早上好",
     ];
   } else if (hour >= 12 && hour < 18) {
     return [
-      "Good Afternoon!", // English
-      "Guten Tag!", // German
-      "Goedemiddag!", // Dutch
-      "Bon après-midi!", // French
-      "¡Buenas tardes!", // Spanish
-      "Selamat Siang!", // Indonesian
-      "こんにちは", // Japanese
-      "좋은 오후입니다", // Korean
-      "مساء الخير", // Arabic
-      "下午好", // Mandarin
+      "Good Afternoon!",
+      "Guten Tag!",
+      "Goedemiddag!",
+      "Bon après-midi!",
+      "¡Buenas tardes!",
+      "Selamat Siang!",
+      "こんにちは",
+      "좋은 오후입니다",
+      "مساء الخير",
+      "下午好",
     ];
   } else {
     return [
-      "Good Evening!", // English
-      "Guten Abend!", // German
-      "Goedenavond!", // Dutch
-      "Bonsoir!", // French
-      "¡Buenas noches!", // Spanish
-      "Selamat Malam!", // Indonesian
-      "こんばんは", // Japanese
-      "좋은 저녁입니다", // Korean
-      "مساء الخير", // Arabic
-      "晚上好", // Mandarin
+      "Good Evening!",
+      "Guten Abend!",
+      "Goedenavond!",
+      "Bonsoir!",
+      "¡Buenas noches!",
+      "Selamat Malam!",
+      "こんばんは",
+      "좋은 저녁입니다",
+      "مساء الخير",
+      "晚上好",
     ];
   }
 }
@@ -135,36 +147,32 @@ function getGreeting(): string[] {
 export const Greeting = () => {
   const [opacity, setOpacity] = useState(1);
   const [isVisible, setIsVisible] = useState(true);
+  // Initialize greeting lazily to avoid hydration mismatch
   const [greeting, setGreeting] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
 
-  // Set mounted flag
+  // Combined mount effect - only runs once
   useEffect(() => {
+    // Set initial state immediately after mount
+    const initialGreeting = getGreeting();
     setMounted(true);
-    setGreeting(getGreeting());
-  }, []);
+    setGreeting(initialGreeting);
 
-  useEffect(() => {
-    if (!mounted) return;
-
+    // Set up interval for updating greeting
     const interval = setInterval(() => {
       setGreeting(getGreeting());
     }, 30 * 1000);
 
     return () => clearInterval(interval);
-  }, [mounted]);
+  }, []); // Empty deps - runs once on mount
 
+  // Scroll handler effect
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const newOpacity = Math.max(0, 1 - currentScrollY / 400);
       setOpacity(newOpacity);
-
-      if (currentScrollY > 500) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
+      setIsVisible(currentScrollY <= 500);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });

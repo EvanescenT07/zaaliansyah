@@ -28,7 +28,8 @@ export const Experience = () => {
       division: "IT System Development Division",
       period: "Nov 2025 - Present",
       location: "South Jakarta",
-      description: "TBA",
+      description:
+        "As a System Development Intern (Mobile Flutter Developer) at AXA Mandiri, I contributed to the development and maintenance of cross-platform mobile applications for Android and iOS using Flutter. I was responsible for developing a major feature on the frontend, focusing on responsive UI and reliable performance. I implemented user interfaces by translating Figma designs into clean, reusable Flutter widgets through close collaboration with the UI/UX team, and integrated RESTful APIs by handling JSON data in coordination with backend developers to ensure smooth data flow. Throughout the development process, I followed clean coding practices, participated in code reviews, and was actively involved in the full development lifecycle, including daily stand-ups and regular progress checkpoints. I also used Git for version control to collaborate effectively with the team, manage code changes, and support an efficient development workflow.",
     },
     {
       logo: "/assets/_logosmbci.png",
@@ -107,10 +108,10 @@ export const Experience = () => {
                       data.status === "Fulltime" || data.status === "Full time"
                         ? "fulltime"
                         : data.status === "Contract"
-                        ? "fulltime"
-                        : data.status === "Internship"
-                        ? "internship"
-                        : "organization"
+                          ? "fulltime"
+                          : data.status === "Internship"
+                            ? "internship"
+                            : "organization"
                     }
                     className="absolute top-4 right-4 text-xs z-10 font-work-sans"
                   >
