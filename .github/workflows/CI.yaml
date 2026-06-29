@@ -28,8 +28,7 @@ jobs:
       CHATBOT_MODEL: ${{ secrets.CHATBOT_MODEL }}
 
       # Prisma
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      PRISMA_DATABASE_URL: ${{ secrets.PRISMA_DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.PRISMA_DATABASE_URL }}
 
       # Blob
       BLOB_STORE_ID: ${{ secrets.BLOB_STORE_ID }}
