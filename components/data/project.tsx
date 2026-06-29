@@ -1,6 +1,6 @@
 "use client";
 
-import { ProjectProps } from "@/types/data-types";
+import { ProjectWithTechType } from "@/types/data-types";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -18,93 +18,20 @@ import {
 } from "@/components/ui/tooltip";
 import { BsArrowRight, BsGithub } from "react-icons/bs";
 import WorkSliderButton from "@/components/ui/workslider";
-import {
-  SiAdonisjs,
-  SiDocker,
-  SiFastapi,
-  SiFlask,
-  SiMysql,
-  SiNextdotjs,
-  SiPostgresql,
-} from "react-icons/si";
-import { GiArtificialIntelligence } from "react-icons/gi";
+import * as SiIcons from "react-icons/si";
+import * as GiIcons from "react-icons/gi";
 
-const projectItems: ProjectProps[] = [
-  {
-    id: 1,
-    title: "Caffmed ",
-    description:
-      "An innovative web application designed to assist in detecting brain tumors utilized machine learning by analyzing user-uploaded brain X-ray images. This project leverages the power of machine learning and integrates a floating AI-powered chatbot using the OpenAI API to enhance user interaction and support.",
-    image: {
-      src: "/project/Caffmed.png",
-      alt: "Portfolio Website Screenshot",
-    },
-    techStack: [
-      { name: "Next.js", icon: <SiNextdotjs /> },
-      { name: "Flask", icon: <SiFlask /> },
-      { name: "Docker", icon: <SiDocker /> },
-    ],
-    githubUrl: "https://github.com/EvanescenT07/caffmed",
-    liveUrl: "https://caffmed.vercel.app",
-  },
-  {
-    id: 2,
-    title: "Caffmusic",
-    description:
-      "A web application that demonstrates machine learning capabilities for music genre classification. Built with Next.js and FastAPI, it uses a CNN model trained on the GTZAN dataset to classify audio files into 10 genres including Blues, Classical, Hip Hop, and Rock through real-time audio processing.",
-    image: {
-      src: "/project/Caffmusic.png",
-      alt: "Portfolio Website Screenshot",
-    },
-    techStack: [
-      { name: "Next.js", icon: <SiNextdotjs /> },
-      { name: "FastAPI", icon: <SiFastapi /> },
-      { name: "PostgreSQL", icon: <SiPostgresql /> },
-    ],
-    githubUrl: "https://github.com/EvanescenT07/caffmusic",
-    liveUrl: "https://caffmusic.vercel.app",
-  },
-  {
-    id: 3,
-    title: "Document Summarizer",
-    description:
-      "A Capstone project using the IBM Granite model. This application feature can summarize documents in docx and txt formats inputted by users.",
-    image: {
-      src: "/project/DocsSumm.png",
-      alt: "Portfolio Website Screenshot",
-    },
-    techStack: [
-      { name: "Next.js", icon: <SiNextdotjs /> },
-      { name: "PostgreSQL", icon: <SiPostgresql /> },
-      { name: "IBM Granite", icon: <GiArtificialIntelligence /> },
-    ],
-    githubUrl: "https://github.com/username/repo",
-    liveUrl: "https://ibm-granite-summarization.vercel.app/",
-  },
-  {
-    id: 4,
-    title: "Warehouse Inventory Management System",
-    description:
-      "A Capstone project developed by a three-person as part of graduation requirements at President University, this Warehouse Inventory Management System leverages cutting-edge technology to streamline warehouse operations. It pairs a high-accuracy YOLOv11 object detection model for automated item identification with an integrated IoT framework consisting of a conveyor system , load cell sensors , and a QR code-based labeling mechanism. All data is monitored and managed through a responsive web dashboard , built to reduce human intervention and boost productivity.",
-    image: {
-      src: "/project/WIMS.png",
-      alt: "WIMS",
-    },
-    techStack: [
-      { name: "AdonisJS", icon: <SiAdonisjs /> },
-      { name: "FastAPI", icon: <SiFastapi /> },
-      { name: "mySQL", icon: <SiMysql /> },
-    ],
-    githubUrl: "/docs/WIMS.pdf",
-    liveUrl: "https://capstone.yuel.web.id/",
-  },
-];
-
-export const Project = () => {
-  const [isProject, setIsProject] = useState(projectItems[0]);
+export const Project = ({ data }: { data: ProjectWithTechType[] }) => {
+  const [isProject, setIsProject] = useState(data[0]);
 
   const handleSlideChange = (swiper: SwiperType) => {
-    setIsProject(projectItems[swiper.realIndex]);
+    setIsProject(data[swiper.realIndex]);
+  };
+
+  const renderIcon = (iconName: string) => {
+    const IconComponent =
+      (SiIcons as any)[iconName] || (GiIcons as any)[iconName];
+    return IconComponent ? <IconComponent /> : null;
   };
 
   return (
@@ -128,7 +55,7 @@ export const Project = () => {
             <div className="flex flex-col gap-[20px] px-5 group">
               {/* Project Number */}
               <div className="text-8xl leading-none font-extrabold text-foreground font-work-sans transition-all duration-500">
-                {String(isProject.id).padStart(2, "0")}
+                {String(isProject.orderIndex).padStart(2, "0")}
               </div>
 
               {/* Project Title */}
@@ -143,24 +70,22 @@ export const Project = () => {
 
               {/* Tech Stack */}
               <div className="flex gap-4 justify-center xl:justify-start">
-                {isProject.techStack.map((tech) => (
+                {isProject.techStacks.map((tech) => (
                   <div key={tech.name}>
-                  
-                      <TooltipProvider delayDuration={100}>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className="text-2xl hover:text-primary transition-all duration-500">
-                              {tech.icon}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-secondary font-bold text-md font-work-sans">
-                              {tech.name}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    
+                    <TooltipProvider key={tech.id} delayDuration={100}>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <div className="text-2xl hover:text-primary transition-all duration-500">
+                            {renderIcon(tech.iconName)}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-secondary font-bold text-md font-work-sans">
+                            {tech.name}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 ))}
               </div>
@@ -226,19 +151,19 @@ export const Project = () => {
                 pagination={false}
                 loop={true}
                 onSlideChange={handleSlideChange}
-                onSwiper={(sw: SwiperType) => setIsProject(projectItems[sw.realIndex])}
+                onSwiper={(sw: SwiperType) => setIsProject(data[sw.realIndex])}
                 className="xl:h-[380px] h-[300px] rounded-xl"
               >
-                {projectItems.map((item) => (
+                {data.map((item, index) => (
                   <SwiperSlide key={item.title}>
                     <div className="h-full relative group flex justify-center items-center bg-background/10 backdrop-blur-2xl border border-transparent shadow-xl rounded-xl overflow-hidden">
                       <div className="relative w-full h-full flex items-center justify-center">
                         <Image
-                          src={item.image.src}
-                          alt={item.image.alt}
+                          src={item.imageUrl}
+                          alt={item.imageAlt}
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          priority={item.id === 1}
+                          priority={index === 0}
                           quality={100}
                           className="object-cover max-w-full max-h-full"
                         />

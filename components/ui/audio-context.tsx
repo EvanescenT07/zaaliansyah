@@ -9,13 +9,20 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { AudioContextType, Track } from "@/types/audio-types";
-import { myPlaylist } from "@/data/playlist";
+import { AudioContextType } from "@/types/audio-types";
+import { PlaylistType } from "@/types/data-types";
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
-export const AudioProvider = ({ children }: { children: ReactNode }) => {
-  const [tracks] = useState<Track[]>(myPlaylist);
+export const AudioProvider = ({
+  children,
+  playlist,
+}: {
+  children: ReactNode;
+  playlist: PlaylistType;
+}) => {
+  const [tracks] = useState<PlaylistType>(playlist);
+
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(0.5);
@@ -24,6 +31,7 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
   const [duration, setDuration] = useState<number>(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  
   const currentTrack = tracks[currentTrackIndex] || null;
 
   // Stable function references using useCallback
@@ -94,7 +102,7 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
       const shouldAutoPlay = wasPlayingRef.current;
 
       // Reset time tracking via audio element events, not direct setState
-      audioRef.current.src = currentTrack.src;
+      audioRef.current.src = currentTrack.audioUrl;
       audioRef.current.load();
 
       if (shouldAutoPlay) {

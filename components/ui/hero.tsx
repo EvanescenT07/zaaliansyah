@@ -10,33 +10,41 @@ import { FiDownload } from "react-icons/fi";
 
 import TypeIt from "typeit-react";
 import dynamic from "next/dynamic";
+import { HeroProps } from "@/types/data-types";
 
 const Status = dynamic(
   () => import("@/components/data/status").then((m) => m.Status),
-  { ssr: true }
+  { ssr: true },
 );
 const Academic = dynamic(
   () => import("@/components/data/academic").then((m) => m.Academic),
-  { ssr: true }
+  { ssr: true },
 );
 const Experience = dynamic(
   () => import("@/components/data/experience").then((m) => m.Experience),
-  { ssr: true }
+  { ssr: true },
 );
 const Project = dynamic(
   () => import("@/components/data/project").then((m) => m.Project),
-  { ssr: true }
+  { ssr: true },
 );
-const TechStack = dynamic(
+const TechStackCommponent = dynamic(
   () => import("@/components/data/tech-stack").then((m) => m.TechStack),
-  { ssr: true }
+  { ssr: true },
 );
 const ContactMe = dynamic(
   () => import("@/components/data/contact").then((m) => m.ContactMe),
-  { ssr: true }
+  { ssr: true },
 );
 
-export const Hero = () => {
+export const Hero = ({
+  academics,
+  experiences,
+  projects,
+  techStacks,
+  statuses,
+  socials,
+}: HeroProps) => {
   const [isDesktop, setIsDesktop] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -88,7 +96,7 @@ export const Hero = () => {
   return (
     <>
       {/* About Section */}
-      <section className="h-full w-full py-16">
+      <section className="h-full py-16 xl:mt-8">
         <div className="container mx-auto">
           {/* Hero Content */}
           <div className="flex flex-col xl:flex-row items-center justify-between xl:pb-30">
@@ -151,7 +159,7 @@ export const Hero = () => {
                 </Button>
 
                 <div className="mb-8 xl:mb-0">
-                  <SocialMedia containerStyle="flex gap-4" />
+                  <SocialMedia containerStyle="flex gap-4" data={socials} />
                 </div>
               </motion.div>
             </div>
@@ -183,7 +191,7 @@ export const Hero = () => {
             viewport={{ once: false, amount: 0.3 }}
             className="mb-12 xl:mb-25"
           >
-            <Status />
+            <Status data={statuses} />
           </motion.div>
 
           {/* Education */}
@@ -197,7 +205,7 @@ export const Hero = () => {
             viewport={{ once: false, amount: 0.3 }}
             className="mb-12 xl:mb-25"
           >
-            <Academic />
+            <Academic data={academics} />
           </motion.div>
 
           {/* Experience */}
@@ -211,7 +219,7 @@ export const Hero = () => {
             viewport={{ once: false, amount: 0.3 }}
             className="mb-8"
           >
-            <Experience />
+            <Experience data={experiences} />
           </motion.div>
 
           {/* Project */}
@@ -225,7 +233,7 @@ export const Hero = () => {
             viewport={{ once: false, amount: 0.3 }}
             className="mb-16 xl:mb-32"
           >
-            <Project />
+            <Project data={projects} />
           </motion.div>
 
           {/* Tech Stack */}
@@ -239,7 +247,7 @@ export const Hero = () => {
             viewport={{ once: false, amount: 0.3 }}
             className="mb-16 xl:mb-32"
           >
-            <TechStack />
+            <TechStackCommponent data={techStacks} />
           </motion.div>
 
           {/* Contact */}
