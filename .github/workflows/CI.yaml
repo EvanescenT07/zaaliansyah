@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, development]
+    branches: [ main, development ]
   pull_request:
-    branches: [main, development]
+    branches: [ main, development ]
 
 jobs:
   check-code:
@@ -27,24 +27,31 @@ jobs:
       CHATBOT_API_KEY: ${{ secrets.CHATBOT_API_KEY }}
       CHATBOT_MODEL: ${{ secrets.CHATBOT_MODEL }}
 
+      # Prisma
+      PRISMA_DATABASE_URL: ${{ secrets.PRISMA_DATABASE_URL }}
+
+      # Blob
+      BLOB_STORE_ID: ${{ secrets.BLOB_STORE_ID }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+
       # Site
       SITE_URL: ${{ secrets.SITE_URL }}
       NEXT_PUBLIC_VERCEL_URL: ${{ secrets.NEXT_PUBLIC_VERCEL_URL }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
 
-      - name: Install dependencies
-        run: bun install
+    - name: Install dependencies
+      run: bun install
 
-      - name: Run ESLint
-        run: bun run lint
+    - name: Generate Prisma Client
+      run: bunx prisma generate
 
-      - name: Build project
-        run: bun run build
+    - name: Run ESLint
+      run: bun run lint

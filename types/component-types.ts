@@ -86,3 +86,18 @@ export interface useConfirmationModalProps {
   cancelText?: string;
   type?: "default" | "danger" | "warning";
 }
+
+export interface ParticleProps {
+  width: number;
+  height: number;
+  background: string;
+  opacity: number;
+  initial: { x: number; y: number; scale: number; rotate?: number };
+  animate: { x: number[]; y: number[]; scale: number[]; rotate?: number[] };
+  transition: {
+    duration: number;
+    delay: number;
+    repeat?: number;
+    ease?: string;
+  };
+}

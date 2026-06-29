@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 import { FloatingChatbot } from "@/components/chatbot/chatbot";
 import { getBaseUrl } from "@/lib/site";
 import { WelcomeModal } from "@/components/overlay/welcome-modal";
+import { prisma } from "@/lib/prisma";
 
 const comfortaa = Comfortaa({
   variable: "--font-comfortaa",
@@ -99,11 +100,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const playlist = await prisma.playlist.findMany({
+    orderBy: {
+      orderIndex: "asc",
+    },
+  });
+
   return (
     <html lang="en">
       <body
@@ -146,7 +153,7 @@ export default function RootLayout({
         />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Toaster />
-          <AudioProvider>
+          <AudioProvider playlist={playlist}>
             <WelcomeModal />
             <Navbar />
             <AudioSettingsModal />

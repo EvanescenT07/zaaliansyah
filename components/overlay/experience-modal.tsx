@@ -41,7 +41,7 @@ export const ExperienceModal = ({
                 <div className="flex items-center gap-4">
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-transparent p-2">
                     <Image
-                      src={data.logo}
+                      src={data.logoUrl}
                       alt={data.company}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -113,7 +113,7 @@ export const ExperienceModal = ({
                 {/* Actions */}
                 <div className="flex gap-3 pt-4 border-t border-border font-work-sans">
                   <Link
-                    href={data.href}
+                    href={data.companyUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 bg-foreground/20 text-foreground hover:text-fore rounded-lg  transition-colors duration-500"

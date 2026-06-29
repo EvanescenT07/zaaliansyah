@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Academic {
+  id          String   @id @default(cuid())
+  institution String
+  degree      String
+  major       String
+  logoUrl     String
+  year        String
+  location    String
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Experience {
+  id          String   @id @default(cuid())
+  company     String
+  position    String
+  division    String
+  period      String
+  location    String
+  description String   @db.Text
+  status      String
+  logoUrl     String
+  companyUrl  String
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id          String      @id @default(cuid())
+  title       String
+  description String      @db.Text
+  imageUrl    String
+  imageAlt    String
+  githubUrl   String?
+  liveUrl     String?
+  orderIndex  Int         @default(0)
+  techStacks  TechStack[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model TechStack {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  iconName  String
+  category  Int
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Status {
+  id         String   @id @default(cuid())
+  title      String
+  count      Float
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model SocialMedia {
+  id         String   @id @default(cuid())
+  name       String
+  url        String
+  iconName   String
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Playlist {
+  id         String   @id @default(cuid())
+  title      String
+  artist     String
+  audioUrl   String
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { BsChevronDoubleDown } from "react-icons/bs";
 import dayjs from "dayjs";
 import TypeIt from "typeit-react";
-import { ParticlePropss } from "@/types/data-types";
+import { ParticleProps } from "@/types/component-types";
 
 
 // Generate particles function
@@ -14,40 +14,43 @@ const generateParticles = (
   theme: string | undefined,
   windowWidth: number,
   windowHeight: number,
-): ParticlePropss[] => {
-  return [...Array(45)].map(() => ({
-    width: Math.random() * 4 + 1,
-    height: Math.random() * 4 + 1,
-    background:
-      theme === "dark"
-        ? `hsl(${Math.random() * 60 + 200}, 70%, ${Math.random() * 30 + 50}%)`
-        : "rgba(0, 0, 0, 0.8)",
-    opacity: Math.random() * 0.6 + 0.3,
-    initial: {
-      x: Math.random() * windowWidth,
-      y: Math.random() * windowHeight,
-      scale: 0,
-      rotate: 0,
-    },
-    animate: {
-      x: [
-        Math.random() * windowWidth,
-        Math.random() * windowWidth,
-        Math.random() * windowWidth,
-      ],
-      y: [
-        Math.random() * windowHeight,
-        Math.random() * windowHeight,
-        Math.random() * windowHeight,
-      ],
-      scale: [0, 1, 0.8, 1, 0],
-      rotate: [0, 180, 360],
-    },
-    transition: {
-      duration: Math.random() * 20 + 15,
-      delay: Math.random() * 5,
-    },
-  }));
+): ParticleProps[] => {
+  // Scale count with screen area: ~40 on small screens, capped at 80 on large ones
+  const particleCount = Math.min(
+    80,
+    Math.max(40, Math.floor((windowWidth * windowHeight) / 14000)),
+  );
+
+  return Array.from({ length: particleCount }, () => {
+    const startX = Math.random() * windowWidth;
+    const startY = Math.random() * windowHeight;
+
+    return {
+      width: Math.random() * 5 + 2, // 2–7px (was 1–5px)
+      height: Math.random() * 5 + 2,
+      background:
+        theme === "dark"
+          ? `hsl(${Math.random() * 60 + 200}, 70%, ${Math.random() * 30 + 50}%)`
+          : "rgba(0, 0, 0, 0.8)",
+      opacity: Math.random() * 0.6 + 0.3,
+      initial: {
+        x: startX,
+        y: startY,
+        scale: 0,
+      },
+      animate: {
+        x: [startX, Math.random() * windowWidth, Math.random() * windowWidth],
+        y: [startY, Math.random() * windowHeight, Math.random() * windowHeight],
+        scale: [0, 1, 0.8, 1, 0],
+      },
+      transition: {
+        duration: Math.random() * 20 + 15,
+        delay: Math.random() * 5,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    };
+  });
 };
 
 // Floating particles component

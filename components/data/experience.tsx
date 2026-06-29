@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CareerProps } from "@/types/data-types";
+import { ExperienceType } from "@/types/data-types";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExperienceModal } from "@/components/overlay/experience-modal";
 import { Badge } from "@/components/ui/badge";
@@ -13,63 +13,14 @@ import {
   Calendar,
 } from "lucide-react";
 
-export const Experience = () => {
+export const Experience = ({data}:{data: ExperienceType[] } ) => {
+  
   const [selectedExperience, setSelectedExperience] =
-    useState<CareerProps | null>(null);
+    useState<ExperienceType | null>(null);
+    
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const CareerData: CareerProps[] = [
-    {
-      logo: "/assets/_logoaxamandiri.png",
-      href: "https://mypage.axa.co.id/",
-      status: "Internship",
-      company: "PT AXA Mandiri Financial Services",
-      position: "System Development",
-      division: "IT System Development Division",
-      period: "Nov 2025 - Present",
-      location: "South Jakarta",
-      description:
-        "As a System Development Intern (Mobile Flutter Developer) at AXA Mandiri, I contributed to the development and maintenance of cross-platform mobile applications for Android and iOS using Flutter. I was responsible for developing a major feature on the frontend, focusing on responsive UI and reliable performance. I implemented user interfaces by translating Figma designs into clean, reusable Flutter widgets through close collaboration with the UI/UX team, and integrated RESTful APIs by handling JSON data in coordination with backend developers to ensure smooth data flow. Throughout the development process, I followed clean coding practices, participated in code reviews, and was actively involved in the full development lifecycle, including daily stand-ups and regular progress checkpoints. I also used Git for version control to collaborate effectively with the team, manage code changes, and support an efficient development workflow.",
-    },
-    {
-      logo: "/assets/_logosmbci.png",
-      href: "https://www.smbc.co.id/",
-      status: "Internship",
-      company: "PT Bank SMBC Indonesia Tbk",
-      position: "System Administration Management",
-      division: "SAM Division",
-      period: "Feb 2025 - Nov 2025",
-      location: "South Jakarta",
-      description:
-        "As a proactive member of an Agile team, I was deeply involved in the entire software development lifecycle, from sprint planning to final release. I played a key role in shaping our product's direction by authoring over 20 user stories and backlog items, which directly led to new feature releases. Working in close support of the Product Owner, I helped prioritize development efforts and ensured features aligned with user requirements by executing detailed User Acceptance Testing (UAT). To support the team's long-term success, I also developed more than 7 technical documents for internal applications and actively contributed to initiatives that improved our overall team culture and processes.",
-    },
-    {
-      logo: "/assets/_logobsi.png",
-      href: "https://www.bsi.co.id/",
-      status: "Internship",
-      company: "PT Berlian Sistem Informasi",
-      position: "CX System Development Intern",
-      division: "DMA Division",
-      period: "Aug 2024 - Januari 2025",
-      location: "East Jakarta",
-      description:
-        "As a CX System Development Intern, I contributed to key projects that improved data integrity and team efficiency. I helped establish a centralized Source of Truth database to reduce inconsistencies and played a significant role in developing a Docusaurus-based internal guidance system, using Azure DevOps with Git for team collaboration. By applying Agile practices, I directly contributed to the team achieving an 87% development efficiency rate. I also supported product quality by creating 15+ UAT scenarios, documenting insights from over 10 brainstorming sessions, and participating in 20+ cross-functional meetings to ensure stakeholder alignment",
-    },
-    {
-      logo: "/assets/_logopuma.png",
-      href: "https://www.instagram.com/itpresuniv/",
-      status: "Organization",
-      company: "PUMA Informatics",
-      position: "Vice Head of Communication & Design Division",
-      division: "Design Division",
-      period: "Dec 2023 - Dec 2024",
-      location: "President University",
-      description:
-        "As Vice of the Design Division, I led and mentored a team of 3+ members, managing task delegation and deliverable reviews to consistently meet deadlines and quality standards. I established and maintained the organization's brand identity by designing the official PUMA logo and creating all visual content for social media, which improved channel consistency and visibility. My hands-on work also included producing print assets like the wall magazine and contributing to the full production of the company profile video, from storyboarding through post-production.",
-    },
-  ];
-
-  const openModal = (data: CareerProps) => {
+  const openModal = (data: ExperienceType) => {
     setSelectedExperience(data);
     setIsModalOpen(true);
   };
@@ -94,7 +45,7 @@ export const Experience = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr">
           {/* Experience Data */}
-          {CareerData.map((data, index) => (
+          {data.map((data, index) => (
             <div
               key={index}
               onClick={() => openModal(data)}
@@ -121,7 +72,7 @@ export const Experience = () => {
                   {/* Logo */}
                   <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-transparent p-4 mx-auto md:mx-0">
                     <Image
-                      src={data.logo}
+                      src={data.logoUrl}
                       alt={data.company}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

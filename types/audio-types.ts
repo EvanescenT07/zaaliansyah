@@ -1,22 +1,8 @@
 import { RefObject } from "react";
-
-export interface Track {
-  id: number;
-  title: string;
-  artist: string;
-  src: string;
-}
-
-export interface Playlist {
-  tracks: Track[];
-  currentTrackIndex: number;
-  isPlaying: boolean;
-  volume: number;
-  shuffle: boolean;
-}
+import type { Playlist } from "@/lib/generated/prisma/client";
 
 export interface AudioContextType {
-  currentTrack: Track | null;
+  currentTrack: Playlist | null;
   isPlaying: boolean;
   volume: number;
   shuffle: boolean;

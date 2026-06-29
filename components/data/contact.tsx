@@ -8,10 +8,10 @@ import {
   FaMapMarkerAlt,
   FaPhoneAlt,
 } from "react-icons/fa";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
-import { Label } from "../ui/label";
-import { Button } from "../ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 const PersonalInfo: ContactProps[] = [
   {
@@ -57,7 +57,7 @@ export const ContactMe = () => {
   }, []);
 
   const HandleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = event.target;
     setFormData({
@@ -100,7 +100,7 @@ export const ContactMe = () => {
           subject: formData.subject,
           message: formData.message,
         },
-        userID
+        userID,
       );
       toast.success("Message sent successfully!");
       setFormData({
