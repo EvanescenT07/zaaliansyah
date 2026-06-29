@@ -1,5 +1,5 @@
 import { RefObject } from "react";
-import { Playlist } from "@/lib/generated/prisma/client";
+import type { Playlist } from "@/lib/generated/prisma/client";
 
 export interface AudioContextType {
   currentTrack: Playlist | null;

@@ -8,7 +8,7 @@ export const TechStack = ({ data }: { data: TechStackType }) => {
   const row3 = data.filter((tech) => tech.category === 3);
 
   const renderIcon = (iconName: string) => {
-    const IconComponent = (SiIcons as any)[iconName];
+    const IconComponent = SiIcons[iconName as keyof typeof SiIcons];
     return IconComponent ? <IconComponent /> : null;
   };
 

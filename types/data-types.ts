@@ -1,4 +1,4 @@
-import {
+import type {
   Academic,
   Experience,
   Playlist,
@@ -51,5 +51,3 @@ export interface ContactProps {
   title: string;
   value: string;
 }
-
-

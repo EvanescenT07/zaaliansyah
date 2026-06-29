@@ -4,7 +4,7 @@ import * as FaIcons from "react-icons/fa";
 
 export const SocialMedia = ({ containerStyle, data }: SocialMediaType) => {
   const renderIcon = (iconName: string) => {
-    const IconComponent = (FaIcons as any)[iconName];
+    const IconComponent = FaIcons[iconName as keyof typeof FaIcons];
     return IconComponent ? <IconComponent /> : null;
   };
 

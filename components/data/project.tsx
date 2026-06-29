@@ -30,7 +30,9 @@ export const Project = ({ data }: { data: ProjectWithTechType[] }) => {
 
   const renderIcon = (iconName: string) => {
     const IconComponent =
-      (SiIcons as any)[iconName] || (GiIcons as any)[iconName];
+      SiIcons[iconName as keyof typeof SiIcons] ||
+      GiIcons[iconName as keyof typeof GiIcons];
+
     return IconComponent ? <IconComponent /> : null;
   };
 
