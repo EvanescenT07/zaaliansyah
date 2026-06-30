@@ -38,6 +38,7 @@ const ContactMe = dynamic(
 );
 
 export const Hero = ({
+  profile,
   academics,
   experiences,
   projects,
@@ -64,30 +65,45 @@ export const Hero = ({
     return () => window.removeEventListener("resize", updateWindowwidth);
   }, [mounted]);
 
-  const DesktopText =
-    "A recent Informatics graduate from President University with a specialization in Artificial Intelligence. My expertise spans software development, web development, and user-centric digital design, skills honed during my tenure as the former Vice Head of the Design Division for the President University Major Association. I am a proven problem-solver with strong leadership and communication skills, dedicated to continuous learning and delivering high-quality, impactful projects.";
-  const MobileText =
-    "A recent Informatics graduate from President University specializing in Artificial Intelligence. Skilled in software project development, web development, and digital design, ready to create impactful digital solutions.";
+  const downloadCVHandler = async () => {
+    if (!profile) return;
 
-  const downloadCVHandler = () => {
     try {
       setDownloading(true);
 
+      // Fetch the file as a Blob to force the download behavior
+      const response = await fetch(profile.cvUrl);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch the CV");
+      }
+
+      // Convert the response into an object URL
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // Create the hidden anchor link
       const link = document.createElement("a");
-      link.href = "/docs/CV.pdf";
+      link.href = blobUrl;
       link.download = "CV.pdf";
       link.target = "_blank";
       link.rel = "noopener noreferrer";
 
+      // Trigger the download
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
 
-      toast.success("Downloading CV");
-    } catch {
-      console.error("Error downloading CV");
-      toast.error("Failed to download CV");
-      window.open("/docs/CV.pdf", "_blank");
+      // Clean up the DOM and memory
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+      toast.success("CV Downloaded Successfully!");
+    } catch (error) {
+      console.error("Error downloading CV:", error);
+      toast.error("Opening CV in a new tab...");
+
+      // Fallback: If the fetch fails (e.g. network issue), safely open the Blob URL in a new tab
+      window.open(profile.cvUrl, "_blank", "noopener,noreferrer");
     } finally {
       setDownloading(false);
     }
@@ -137,7 +153,11 @@ export const Hero = ({
                 viewport={{ once: false, amount: 0.3 }}
                 className="max-w-[500px] xl:max-w-[750px] mb-9 mt-4 text-foreground font-normal font-work-sans xl:text-justify leading-relaxed text-base xl:text-lg"
               >
-                {mounted ? (isDesktop ? DesktopText : MobileText) : MobileText}
+                {profile
+                  ? isDesktop
+                    ? profile.desktopText
+                    : profile.mobileText
+                  : ""}{" "}
               </motion.p>
 
               <motion.div
@@ -176,7 +196,7 @@ export const Hero = ({
               }}
               viewport={{ once: false, amount: 0.3 }}
             >
-              <Photo />
+              <Photo photoUrl={profile?.photoUrl} />
             </motion.div>
           </div>
 

@@ -12,13 +12,15 @@ export const WelcomeModal = () => {
   const { currentTrack, play, pause, next } = useAudioContext();
   const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Show modal on every session (no localStorage)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, 1500);
+    const hasChosen = localStorage.getItem("audio_choice_made");
 
-    return () => clearTimeout(timer);
+    if (!hasChosen) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Random shuffle on mount
@@ -88,6 +90,7 @@ export const WelcomeModal = () => {
     play();
     setIsPreviewPlaying(false);
     setIsOpen(false);
+    localStorage.setItem("audio_choice_made", "true");
   };
 
   const handleBrowseSilently = (e: React.MouseEvent) => {
@@ -95,6 +98,7 @@ export const WelcomeModal = () => {
     pause();
     setIsPreviewPlaying(false);
     setIsOpen(false);
+    localStorage.setItem("audio_choice_made", "true");
   };
 
   return (

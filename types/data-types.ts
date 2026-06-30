@@ -3,13 +3,22 @@ import type {
   Experience,
   Playlist,
   Project as PrismaProject,
+  Profile,
   SocialMedia,
   Status,
   TechStack,
 } from "@/lib/generated/prisma/client";
 import { JSX } from "react";
 
+export interface BlobItemProps {
+  url: string;
+  pathname: string;
+  size: number;
+  uploadedAt: Date;
+}
+
 export interface HeroProps {
+  profile: Profile;
   academics: Academic[];
   experiences: Experience[];
   projects: (PrismaProject & { techStacks: TechStack[] })[];
@@ -51,3 +60,32 @@ export interface ContactProps {
   title: string;
   value: string;
 }
+
+export type CreateAcademicInput = Omit<
+  Academic,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export type UpsertProfileInput = Omit<
+  Profile,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export type CreateExperienceInput = Omit<
+  Experience,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export type CreateProjectInput = Omit<
+  PrismaProject,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export type CreateTechInput = Omit<TechStack, "id" | "createdAt" | "updatedAt">;
+
+export type CreateStatusInput = Omit<Status, "id" | "createdAt" | "updatedAt">;
+
+export type CreateSocialInput = Omit<
+  SocialMedia,
+  "id" | "createdAt" | "updatedAt"
+>;
