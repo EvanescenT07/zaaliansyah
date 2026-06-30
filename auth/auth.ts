@@ -51,7 +51,7 @@ export async function loginWithPin(formData: FormData) {
     success: false,
     error:
       record.attempts >= MAX_ATTEMPTS
-        ? "Account locked for 15 minutes."
+        ? "Account locked for 5 minutes."
         : `Invalid PIN. ${attemptsLeft} attempts remaining.`,
   };
 }
