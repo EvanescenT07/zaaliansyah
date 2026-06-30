@@ -116,8 +116,8 @@ export function NavbarComponent({ items, className }: NavbarProps) {
   return (
     <div
       className={cn(
-        "fixed bottom-0 sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6",
-        className
+        "fixed bottom-0 sm:bottom-auto sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:pt-6",
+        className,
       )}
     >
       <div className="flex items-center gap-5">
@@ -134,7 +134,7 @@ export function NavbarComponent({ items, className }: NavbarProps) {
                   "relative flex items-center justify-center p-2 rounded-full font-work-sans font-semibold text-sm transition-all duration-300 leading-relaxed cursor-pointer",
                   isActive
                     ? "bg-primary/10 text-primary backdrop-blur-sm shadow-xl scale-110"
-                    : "hover:bg-black/20 dark:hover:bg-white/20 text-foreground hover:scale-105"
+                    : "hover:bg-black/20 dark:hover:bg-white/20 text-foreground hover:scale-105",
                 )}
               >
                 <span className="hidden md:inline px-2">{item.name}</span>

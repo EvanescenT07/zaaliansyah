@@ -3,7 +3,9 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-export const Photo = () => {
+export const Photo = ({ photoUrl }: { photoUrl: string }) => {
+  // const imageSource = photoUrl || '/assets/profile.png'
+  
   return (
     <div className="w-full h-full relative items-center">
       <motion.div
@@ -23,12 +25,12 @@ export const Photo = () => {
           className="w-[312px] h-[312px] xl:w-[418px] xl:h-[418px] absolute"
         >
           <Image
-            src="/assets/profile.png"
+            src={photoUrl}
             priority
             quality={100}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            alt="fikar.dev"
+            alt="Profile Image"
             className="object-contain rounded-full"
           />
         </motion.div>

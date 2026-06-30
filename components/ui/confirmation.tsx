@@ -1,6 +1,10 @@
+"use client";
+
 import { ConfirmationModalProps } from "@/types/component-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export const ModalConfirmation = ({
   isOpen,
@@ -13,6 +17,10 @@ export const ModalConfirmation = ({
   type = "default",
   icon,
 }: ConfirmationModalProps) => {
+  // We need to wait for the client to mount before we can use document.body
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const handleConfirm = () => {
     onConfirm();
     onClose();
@@ -36,7 +44,7 @@ export const ModalConfirmation = ({
 
   const styles = getTypeStyles();
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -46,11 +54,11 @@ export const ModalConfirmation = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
           />
 
-          {/* Modal */}
-          <div className="fixed inset-0 flex items-center justify-center z-[101] p-4">
+          {/* Modal Container */}
+          <div className="fixed inset-0 flex items-center justify-center z-[9999] p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -93,7 +101,7 @@ export const ModalConfirmation = ({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={onClose}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-foreground bg-background hover:bg-foreground/60 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-foreground bg-background hover:bg-foreground/60 border border-foreground/20 rounded-lg transition-colors cursor-pointer"
                 >
                   {cancelText}
                 </motion.button>
@@ -101,7 +109,7 @@ export const ModalConfirmation = ({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleConfirm}
-                  className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${styles.confirmButton}`}
+                  className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer border border-transparent ${styles.confirmButton}`}
                 >
                   {confirmText}
                 </motion.button>
@@ -112,4 +120,7 @@ export const ModalConfirmation = ({
       )}
     </AnimatePresence>
   );
+
+  // Teleport the modal straight to the document body!
+  return mounted ? createPortal(modalContent, document.body) : null;
 };

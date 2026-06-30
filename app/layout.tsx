@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { Comfortaa, Work_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/theme-provider";
-import { Navbar } from "@/components/layout/navbar-index";
 import { AudioProvider } from "@/components/ui/audio-context";
 import { AudioSettingsModal } from "@/components/overlay/setting-modal";
-import { Logo } from "@/components/layout/logo";
 import { Toaster } from "react-hot-toast";
 import { FloatingChatbot } from "@/components/chatbot/chatbot";
 import { getBaseUrl } from "@/lib/site";
@@ -155,9 +153,7 @@ export default async function RootLayout({
           <Toaster />
           <AudioProvider playlist={playlist}>
             <WelcomeModal />
-            <Navbar />
             <AudioSettingsModal />
-            <Logo />
             <main>{children}</main>
             <FloatingChatbot />
           </AudioProvider>
