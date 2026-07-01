@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CreateProjectInput } from "@/types/data-types";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 const checkAuth = async () => {
   const cookieStore = await cookies();
@@ -28,29 +29,55 @@ export async function getProjects() {
 export async function createProject(data: CreateProjectInput) {
   try {
     await checkAuth();
-    await prisma.project.create({ data });
+    const { techStackIds, ...projectData } = data;
+
+    await prisma.project.create({
+      data: {
+        ...projectData,
+        techStacks: techStackIds
+          ? {
+              connect: techStackIds.map((id) => ({ id })),
+            }
+          : undefined,
+      },
+    });
+
+    revalidatePath("/", "layout"); // Purge the frontend cache!
     return { success: true };
   } catch (error) {
     console.error("Error creating project record:", error);
     return { success: false, error: "Failed to create project record" };
   }
 }
-
 export async function updateProject(id: string, data: CreateProjectInput) {
   try {
     await checkAuth();
-    await prisma.project.update({ where: { id }, data });
+    const { techStackIds, ...projectData } = data;
+
+    await prisma.project.update({
+      where: { id },
+      data: {
+        ...projectData,
+        techStacks: techStackIds
+          ? {
+              set: techStackIds.map((techId) => ({ id: techId })),
+            }
+          : undefined,
+      },
+    });
+
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error updating project record:", error);
     return { success: false, error: "Failed to update project record" };
   }
 }
-
 export async function deleteProject(id: string) {
   try {
     await checkAuth();
     await prisma.project.delete({ where: { id } });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error deleting project record:", error);

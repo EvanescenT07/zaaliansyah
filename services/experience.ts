@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CreateExperienceInput } from "@/types/data-types";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 const checkAuth = async () => {
   const cookieStore = await cookies();
@@ -28,6 +29,7 @@ export async function createExperience(data: CreateExperienceInput) {
   try {
     await checkAuth();
     await prisma.experience.create({ data });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error creating experience record:", error);
@@ -42,6 +44,7 @@ export async function updateExperience(
   try {
     await checkAuth();
     await prisma.experience.update({ where: { id }, data });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error updating experience record:", error);
@@ -53,6 +56,7 @@ export async function deleteExperience(id: string) {
   try {
     await checkAuth();
     await prisma.experience.delete({ where: { id } });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error deleting experience record:", error);

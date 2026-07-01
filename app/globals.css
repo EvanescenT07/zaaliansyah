@@ -265,3 +265,18 @@
 .text-blink {
   animation: blink-color 3s infinite;
 }
+
+/* Swiper Pagination Customization */
+.experience-slider .swiper-pagination-bullet {
+  background: var(--primary);
+  opacity: 0.3;
+  width: 8px;
+  height: 8px;
+  transition: all 0.3s ease;
+}
+.experience-slider .swiper-pagination-bullet-active {
+  background: var(--primary);
+  opacity: 1;
+  width: 24px;
+  border-radius: 4px;
+}

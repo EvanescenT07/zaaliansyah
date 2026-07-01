@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { UpsertProfileInput } from "@/types/data-types";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 const checkAuth = async () => {
   const cookieStore = await cookies();
@@ -25,9 +26,9 @@ export async function getProfile() {
 export async function upsertProfile(data: UpsertProfileInput) {
   try {
     await checkAuth();
-    
+
     const existing = await prisma.profile.findFirst();
-    
+
     if (existing) {
       await prisma.profile.update({
         where: { id: existing.id },
@@ -36,7 +37,8 @@ export async function upsertProfile(data: UpsertProfileInput) {
     } else {
       await prisma.profile.create({ data });
     }
-    
+
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error saving profile:", error);
