@@ -8,7 +8,7 @@ import {
   updateProject,
 } from "@/services/project";
 import { getTechs } from "@/services/tech";
-import type { Project, TechStack } from "@/lib/generated/prisma/client";
+import type { TechStack } from "@/lib/generated/prisma/client";
 import { ProjectWithTechType, CreateProjectInput } from "@/types/data-types";
 import {
   FolderGit2,
