@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CreateAcademicInput } from "@/types/data-types";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 const checkAuth = async () => {
   const cookieStore = await cookies();
@@ -28,6 +29,7 @@ export async function createAcademic(data: CreateAcademicInput) {
   try {
     await checkAuth();
     await prisma.academic.create({ data });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error creating academic record:", error);
@@ -39,6 +41,7 @@ export async function updateAcademic(id: string, data: CreateAcademicInput) {
   try {
     await checkAuth();
     await prisma.academic.update({ where: { id }, data });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error updating academic record:", error);
@@ -50,6 +53,7 @@ export async function deleteAcademic(id: string) {
   try {
     await checkAuth();
     await prisma.academic.delete({ where: { id } });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error deleting academic record:", error);

@@ -79,7 +79,9 @@ export type CreateExperienceInput = Omit<
 export type CreateProjectInput = Omit<
   PrismaProject,
   "id" | "createdAt" | "updatedAt"
->;
+> & {
+  techStackIds?: string[];
+};
 
 export type CreateTechInput = Omit<TechStack, "id" | "createdAt" | "updatedAt">;
 

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CreateTechInput } from "@/types/data-types";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 const checkAuth = async () => {
   const cookieStore = await cookies();
@@ -26,6 +27,7 @@ export async function createTech(data: CreateTechInput) {
   try {
     await checkAuth();
     await prisma.techStack.create({ data });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch {
     return { success: false, error: "Failed to create tech stack record" };
@@ -36,6 +38,7 @@ export async function updateTech(id: string, data: CreateTechInput) {
   try {
     await checkAuth();
     await prisma.techStack.update({ where: { id }, data });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error updating tech stack record:", error);
@@ -47,6 +50,7 @@ export async function deleteTech(id: string) {
   try {
     await checkAuth();
     await prisma.techStack.delete({ where: { id } });
+    revalidatePath("/", "layout");
     return { success: true };
   } catch {
     return { success: false, error: "Failed to delete tech stack record" };

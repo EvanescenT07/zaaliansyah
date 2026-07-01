@@ -7,7 +7,9 @@ import {
   deleteProject,
   updateProject,
 } from "@/services/project";
-import type { Project } from "@/lib/generated/prisma/client";
+import { getTechs } from "@/services/tech";
+import type { Project, TechStack } from "@/lib/generated/prisma/client";
+import { ProjectWithTechType, CreateProjectInput } from "@/types/data-types";
 import {
   FolderGit2,
   Trash2,
@@ -20,23 +22,36 @@ import {
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { ModalConfirmation } from "@/components/ui/confirmation";
-import { CreateProjectInput } from "@/types/data-types";
 import Image from "next/image";
 
 export default function ProjectsManager() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectWithTechType[]>([]);
+  const [techStacks, setTechStacks] = useState<TechStack[]>([]);
+  const [selectedTechs, setSelectedTechs] = useState<string[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<string | null>(null);
 
-  const [editingRecord, setEditingRecord] = useState<Project | null>(null);
+  const [editingRecord, setEditingRecord] =
+    useState<ProjectWithTechType | null>(null);
 
   const fetchRecords = async () => {
     setFetching(true);
-    const res = await getProjects();
-    if (res.success && res.projects) setProjects(res.projects);
+    const [resProjects, resTechs] = await Promise.all([
+      getProjects(),
+      getTechs(),
+    ]);
+
+    if (resProjects.success && resProjects.projects) {
+      setProjects(resProjects.projects as ProjectWithTechType[]);
+    }
+    if (resTechs.success && resTechs.techs) {
+      setTechStacks(resTechs.techs);
+    }
+
     setFetching(false);
   };
 
@@ -57,6 +72,7 @@ export default function ProjectsManager() {
       githubUrl: (formData.get("githubUrl") as string) || null,
       liveUrl: (formData.get("liveUrl") as string) || null,
       orderIndex: Number(formData.get("orderIndex")),
+      techStackIds: selectedTechs,
     };
 
     let res;
@@ -74,14 +90,16 @@ export default function ProjectsManager() {
       );
       fetchRecords();
       setEditingRecord(null);
+      setSelectedTechs([]);
     } else {
       toast.error(res.error || "Failed to save project");
     }
     setLoading(false);
   };
 
-  const handleEdit = (record: Project) => {
+  const handleEdit = (record: ProjectWithTechType) => {
     setEditingRecord(record);
+    setSelectedTechs(record.techStacks.map((t) => t.id));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -139,7 +157,10 @@ export default function ProjectsManager() {
           {editingRecord && (
             <button
               type="button"
-              onClick={() => setEditingRecord(null)}
+              onClick={() => {
+                setEditingRecord(null);
+                setSelectedTechs([]);
+              }}
               className="text-foreground/50 hover:text-foreground text-sm flex items-center gap-1 cursor-pointer"
             >
               <X size={16} /> Cancel Edit
@@ -203,12 +224,45 @@ export default function ProjectsManager() {
             placeholder="Display Order (0 is first)"
             className="bg-foreground/5 border border-foreground/20 rounded-xl px-4 py-3 outline-none focus:border-primary text-sm md:col-span-2"
           />
+
+          <div className="md:col-span-2 space-y-3 mt-2">
+            <label className="text-sm font-semibold text-foreground/80 px-1">
+              Connected Tech Stacks
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {techStacks.map((tech) => (
+                <button
+                  type="button"
+                  key={tech.id}
+                  onClick={() => {
+                    setSelectedTechs((prev) =>
+                      prev.includes(tech.id)
+                        ? prev.filter((id) => id !== tech.id)
+                        : [...prev, tech.id],
+                    );
+                  }}
+                  className={`px-4 py-2 text-xs font-semibold rounded-full border transition-all cursor-pointer ${
+                    selectedTechs.includes(tech.id)
+                      ? "bg-primary border-primary text-background shadow-md shadow-primary/20"
+                      : "bg-foreground/5 border-foreground/20 text-foreground/70 hover:border-primary/50"
+                  }`}
+                >
+                  {tech.name}
+                </button>
+              ))}
+              {techStacks.length === 0 && (
+                <p className="text-xs text-foreground/50 italic px-1">
+                  No tech stacks available. Please create them first.
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="h-12 px-8 flex items-center justify-center bg-primary text-background font-bold rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50 cursor-pointer w-full md:w-auto"
+          className="h-12 px-8 flex items-center justify-center bg-primary text-background font-bold rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50 cursor-pointer w-full md:w-auto mt-4"
         >
           {loading
             ? "Saving..."
@@ -247,7 +301,21 @@ export default function ProjectsManager() {
                   <h3 className="font-bold text-lg font-comfortaa">
                     {project.title}
                   </h3>
-                  <p className="text-sm text-foreground/80 mt-2 font-work-sans line-clamp-3">
+
+                  {project.techStacks && project.techStacks.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {project.techStacks.map((tech) => (
+                        <span
+                          key={tech.id}
+                          className="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-md font-bold"
+                        >
+                          {tech.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="text-sm text-foreground/80 mt-3 font-work-sans line-clamp-3">
                     {project.description}
                   </p>
                 </div>
