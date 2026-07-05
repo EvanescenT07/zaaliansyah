@@ -31,39 +31,73 @@ export async function createProject(data: CreateProjectInput) {
     await checkAuth();
     const { techStackIds, ...projectData } = data;
 
-    await prisma.project.create({
-      data: {
-        ...projectData,
-        techStacks: techStackIds
-          ? {
-              connect: techStackIds.map((id) => ({ id })),
-            }
-          : undefined,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.project.updateMany({
+        where: { orderIndex: { gte: projectData.orderIndex } },
+        data: { orderIndex: { increment: 1 } },
+      });
+
+      await tx.project.create({
+        data: {
+          ...projectData,
+          techStacks: techStackIds
+            ? { connect: techStackIds.map((id) => ({ id })) }
+            : undefined,
+        },
+      });
     });
 
-    revalidatePath("/", "layout"); // Purge the frontend cache!
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("Error creating project record:", error);
     return { success: false, error: "Failed to create project record" };
   }
 }
+
 export async function updateProject(id: string, data: CreateProjectInput) {
   try {
     await checkAuth();
     const { techStackIds, ...projectData } = data;
 
-    await prisma.project.update({
-      where: { id },
-      data: {
-        ...projectData,
-        techStacks: techStackIds
-          ? {
-              set: techStackIds.map((techId) => ({ id: techId })),
-            }
-          : undefined,
-      },
+    await prisma.$transaction(async (tx) => {
+      const currentProject = await tx.project.findUniqueOrThrow({
+        where: { id },
+        select: { orderIndex: true },
+      });
+
+      const oldIndex = currentProject.orderIndex;
+      const newIndex = projectData.orderIndex;
+
+      if (oldIndex !== newIndex) {
+        if (newIndex < oldIndex) {
+          await tx.project.updateMany({
+            where: {
+              orderIndex: { gte: newIndex, lt: oldIndex },
+              id: { not: id },
+            },
+            data: { orderIndex: { increment: 1 } },
+          });
+        } else {
+          await tx.project.updateMany({
+            where: {
+              orderIndex: { gt: oldIndex, lte: newIndex },
+              id: { not: id },
+            },
+            data: { orderIndex: { decrement: 1 } },
+          });
+        }
+      }
+
+      await tx.project.update({
+        where: { id },
+        data: {
+          ...projectData,
+          techStacks: techStackIds
+            ? { set: techStackIds.map((techId) => ({ id: techId })) }
+            : undefined,
+        },
+      });
     });
 
     revalidatePath("/", "layout");
@@ -73,10 +107,25 @@ export async function updateProject(id: string, data: CreateProjectInput) {
     return { success: false, error: "Failed to update project record" };
   }
 }
+
 export async function deleteProject(id: string) {
   try {
     await checkAuth();
-    await prisma.project.delete({ where: { id } });
+
+    await prisma.$transaction(async (tx) => {
+      const project = await tx.project.findUniqueOrThrow({
+        where: { id },
+        select: { orderIndex: true },
+      });
+
+      await tx.project.delete({ where: { id } });
+
+      await tx.project.updateMany({
+        where: { orderIndex: { gt: project.orderIndex } },
+        data: { orderIndex: { decrement: 1 } },
+      });
+    });
+
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
