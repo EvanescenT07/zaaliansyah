@@ -9,6 +9,8 @@ import { FloatingChatbot } from "@/components/chatbot/chatbot";
 import { getBaseUrl } from "@/lib/site";
 import { WelcomeModal } from "@/components/overlay/welcome-modal";
 import { prisma } from "@/lib/prisma";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const comfortaa = Comfortaa({
   variable: "--font-comfortaa",
@@ -150,6 +152,8 @@ export default async function RootLayout({
           }}
         />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <SpeedInsights />
+          <Analytics />
           <Toaster />
           <AudioProvider playlist={playlist}>
             <WelcomeModal />
