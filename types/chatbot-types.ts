@@ -1,3 +1,8 @@
+export interface ContextCacheProps {
+  content: string;
+  builtAt: number;
+}
+
 export interface ChatbotMessageProps {
   id?: string;
   role: "user" | "assistant";

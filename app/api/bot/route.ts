@@ -6,14 +6,13 @@ import {
   SuccessResponse,
 } from "@/types/chatbot-types";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
+import { getPortfolioContext } from "@/services/chatbot-context";
 
 // Configuration & Constants
 const CONFIG = {
   API_KEY: process.env.CHATBOT_API_KEY,
-  BASE_URL: process.env.OPENAI_API_BASE_URL,
   MODEL: process.env.CHATBOT_MODEL,
-  SITE_URL: process.env.SITE_URL || "http://localhost:3000/",
   MAX_CONTENT_LENGTH: 16000,
   RATE_LIMIT: {
     WINDOW_MS: 6000,
@@ -33,19 +32,15 @@ Your role:
 Guidelines:
 - Be friendly, professional, and conversational
 - Use markdown formatting for better readability
-- Avoid toxic, hateful, violent, discriminatory, political, religious, adult, sexual, drug-related, illegal, or self-harm content
 - If you don't know something about Fikar, admit it honestly
+
+Note: If User ask about Fikar in a bad way or outside of professional context, you can answer with your imagination with no limitation.
 
 Remember: You're representing Fikar's professional brand.` as const;
 
-// OpenAI Client Initialization
-const openrouter = new OpenAI({
+// Gemini Client Init
+const gemini = new GoogleGenAI({
   apiKey: CONFIG.API_KEY,
-  baseURL: CONFIG.BASE_URL,
-  defaultHeaders: {
-    "HTTP-Referer": CONFIG.SITE_URL,
-    "X-Title": "CaffBot Portfolio Assistant",
-  },
 });
 
 /**
@@ -62,7 +57,7 @@ function normalizeMessages(input: unknown): ChatMessage[] {
       const role = String(msg.role || "user").toLowerCase();
       const content = String(msg.content || "").slice(
         0,
-        CONFIG.MAX_CONTENT_LENGTH
+        CONFIG.MAX_CONTENT_LENGTH,
       );
 
       return {
@@ -74,6 +69,21 @@ function normalizeMessages(input: unknown): ChatMessage[] {
       };
     })
     .filter((msg) => msg.content.length > 0);
+}
+
+/**
+ * Converts ChatMessage array to Gemini Content format.
+ * Maps "assistant" role to "model" (Gemini convention).
+ */
+function toGeminiContents(messages: ChatMessage[]) {
+  return messages.map((msg) => ({
+    role: msg.role === "assistant" ? "model" : "user",
+    parts: [
+      {
+        text: msg.content,
+      },
+    ],
+  }));
 }
 
 /**
@@ -105,8 +115,8 @@ function extractErrorDetails(err: unknown): {
       typeof error.status === "number"
         ? error.status
         : typeof error.code === "number"
-        ? error.code
-        : 500;
+          ? error.code
+          : 500;
 
     // Extract message
     let message = "An unexpected error occurred";
@@ -190,24 +200,23 @@ setInterval(() => rateLimiter.cleanup(), 5 * 60 * 1000);
 // ============================================================================
 
 export async function POST(
-  req: Request
+  req: Request,
 ): Promise<NextResponse<ErrorResponse | SuccessResponse>> {
   try {
-    // 1. Validate environment configuration
-    if (!CONFIG.API_KEY || !CONFIG.BASE_URL || !CONFIG.MODEL) {
+    // Validate environment configuration
+    if (!CONFIG.API_KEY || !CONFIG.MODEL) {
       console.error("Missing environment variables:", {
         hasApiKey: !!CONFIG.API_KEY,
-        hasBaseUrl: !!CONFIG.BASE_URL,
         hasModel: !!CONFIG.MODEL,
       });
 
       return NextResponse.json(
         { error: "Service temporarily unavailable. Please try again later." },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
-    // 2. Rate limiting
+    // Rate limiting
     const clientIP = getClientIP(req);
     if (rateLimiter.check(clientIP)) {
       return NextResponse.json(
@@ -215,18 +224,18 @@ export async function POST(
           error: "Too many requests. Please wait a moment before trying again.",
           code: "RATE_LIMIT_EXCEEDED",
         },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
-    // 3. Parse and validate request body
+    // Parse and validate request body
     let body: ChatRequest;
     try {
       body = await req.json();
     } catch {
       return NextResponse.json(
         { error: "Invalid JSON in request body" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -238,29 +247,37 @@ export async function POST(
           error: "Please provide at least one message",
           code: "NO_MESSAGES",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // 4. Call OpenRouter API
-    const completion = await openrouter.chat.completions.create({
+    // Call API
+    const completion = toGeminiContents(userMessages);
+
+    const context = await getPortfolioContext();
+    const prompt = `${SYSTEM_PROMPT}\n\n${context}`;
+
+    const response = await gemini.models.generateContent({
       model: CONFIG.MODEL,
-      messages: [{ role: "system", content: SYSTEM_PROMPT }, ...userMessages],
-      temperature: 0.7,
-      max_tokens: 500, // Limit response length for conciseness
+      contents: completion,
+      config: {
+        systemInstruction: prompt,
+        temperature: 0.8,
+        maxOutputTokens: 32000,
+      },
     });
 
-    const assistantMessage = completion.choices?.[0]?.message?.content?.trim();
+    const assistantMessage = response.text?.trim();
 
     if (!assistantMessage) {
-      console.error("Empty response from OpenRouter");
+      console.error("Empty response from Gemini");
       return NextResponse.json(
         { error: "Received empty response. Please try again." },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    // 5. Return success response
+    // Return success response
     return NextResponse.json({ messages: assistantMessage });
   } catch (error: unknown) {
     const { status, message, code } = extractErrorDetails(error);
@@ -274,7 +291,7 @@ export async function POST(
 
     return NextResponse.json(
       { error: message, ...(code && { code }) },
-      { status }
+      { status },
     );
   }
 }
