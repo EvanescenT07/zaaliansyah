@@ -13,10 +13,11 @@ import { getPortfolioContext } from "@/services/chatbot-context";
 const CONFIG = {
   API_KEY: process.env.CHATBOT_API_KEY,
   MODEL: process.env.CHATBOT_MODEL,
-  MAX_CONTENT_LENGTH: 16000,
+  MAX_CONTENT_LENGTH: 2000,
+  MAX_MESSAGES_COUNT: 10,
   RATE_LIMIT: {
-    WINDOW_MS: 6000,
-    MAX_REQUESTS: 60,
+    WINDOW_MS: 60 * 1000,
+    MAX_REQUESTS: 10,
   },
 } as const;
 
@@ -33,8 +34,7 @@ Guidelines:
 - Be friendly, professional, and conversational
 - Use markdown formatting for better readability
 - If you don't know something about Fikar, admit it honestly
-
-Note: If User ask about Fikar in a bad way or outside of professional context, you can answer with your imagination with no limitation.
+- Always remain professional and adhere to safety standards
 
 Remember: You're representing Fikar's professional brand.` as const;
 
@@ -68,7 +68,8 @@ function normalizeMessages(input: unknown): ChatMessage[] {
         content: content.trim(),
       };
     })
-    .filter((msg) => msg.content.length > 0);
+    .filter((msg) => msg.content.length > 0)
+    .slice(-CONFIG.MAX_MESSAGES_COUNT);
 }
 
 /**
@@ -106,11 +107,9 @@ function extractErrorDetails(err: unknown): {
   message: string;
   code?: string;
 } {
-  // Handle OpenAI/OpenRouter specific errors
   if (err && typeof err === "object") {
     const error = err as Record<string, unknown>;
 
-    // Check for status code
     const status =
       typeof error.status === "number"
         ? error.status
@@ -118,7 +117,6 @@ function extractErrorDetails(err: unknown): {
           ? error.code
           : 500;
 
-    // Extract message
     let message = "An unexpected error occurred";
 
     if (error.message && typeof error.message === "string") {
@@ -130,7 +128,6 @@ function extractErrorDetails(err: unknown): {
       }
     }
 
-    // Map status codes to user-friendly messages
     const statusMessages: Record<number, string> = {
       400: "Invalid request format",
       401: "Authentication failed",
@@ -158,28 +155,24 @@ class RateLimiter {
   private readonly isProd = process.env.NODE_ENV === "production";
 
   check(ip: string): boolean {
-    if (!this.isProd) return false; // No rate limiting in development
+    if (!this.isProd) return false;
 
     const now = Date.now();
     const record = this.hits.get(ip);
 
-    // Reset if window expired
     if (!record || now - record.timestamp > CONFIG.RATE_LIMIT.WINDOW_MS) {
       this.hits.set(ip, { count: 1, timestamp: now });
       return false;
     }
 
-    // Check if limit exceeded
     if (record.count >= CONFIG.RATE_LIMIT.MAX_REQUESTS) {
       return true;
     }
 
-    // Increment counter
     record.count++;
     return false;
   }
 
-  // Cleanup old entries periodically
   cleanup(): void {
     const now = Date.now();
     for (const [ip, record] of this.hits.entries()) {
@@ -192,7 +185,6 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter();
 
-// Cleanup rate limiter every 5 minutes
 setInterval(() => rateLimiter.cleanup(), 5 * 60 * 1000);
 
 // ============================================================================
@@ -203,7 +195,6 @@ export async function POST(
   req: Request,
 ): Promise<NextResponse<ErrorResponse | SuccessResponse>> {
   try {
-    // Validate environment configuration
     if (!CONFIG.API_KEY || !CONFIG.MODEL) {
       console.error("Missing environment variables:", {
         hasApiKey: !!CONFIG.API_KEY,
@@ -216,7 +207,6 @@ export async function POST(
       );
     }
 
-    // Rate limiting
     const clientIP = getClientIP(req);
     if (rateLimiter.check(clientIP)) {
       return NextResponse.json(
@@ -228,7 +218,6 @@ export async function POST(
       );
     }
 
-    // Parse and validate request body
     let body: ChatRequest;
     try {
       body = await req.json();
@@ -251,7 +240,6 @@ export async function POST(
       );
     }
 
-    // Call API
     const completion = toGeminiContents(userMessages);
 
     const context = await getPortfolioContext();
@@ -263,7 +251,7 @@ export async function POST(
       config: {
         systemInstruction: prompt,
         temperature: 0.8,
-        maxOutputTokens: 32000,
+        maxOutputTokens: 1500,
       },
     });
 
@@ -277,7 +265,6 @@ export async function POST(
       );
     }
 
-    // Return success response
     return NextResponse.json({ messages: assistantMessage });
   } catch (error: unknown) {
     const { status, message, code } = extractErrorDetails(error);

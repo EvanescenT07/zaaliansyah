@@ -2,15 +2,10 @@
 
 import { prisma } from "@/lib/prisma";
 import { CreateSocialInput } from "@/types/data-types";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-const checkAuth = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  if (token !== process.env.ADMIN_SECRET_TOKEN)
-    throw new Error("Unauthorized!");
-};
+import { verifyAdminAuth } from "@/lib/auth-guard";
+const checkAuth = verifyAdminAuth;
 
 export async function getSocials() {
   try {
