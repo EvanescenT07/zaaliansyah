@@ -7,9 +7,10 @@ export function proxy(request: NextRequest) {
   // Protect all /admin routes
   if (path.startsWith("/admin") && path !== "/admin/login") {
     const session = request.cookies.get("admin_session");
+    const adminToken = process.env.ADMIN_SECRET_TOKEN;
 
-    // If cookie is missing or incorrect
-  if (!session || session.value !== process.env.ADMIN_SECRET_TOKEN) {
+    // Strict validation: admin token must be configured and matched
+    if (!adminToken || !session?.value || session.value !== adminToken) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }

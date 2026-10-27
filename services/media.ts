@@ -1,22 +1,25 @@
 "use server";
 
 import { del, list, put } from "@vercel/blob";
-import { cookies } from "next/headers";
+import { verifyAdminAuth } from "@/lib/auth-guard";
 
-// Security Check Helper
-const checkAuth = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  if (token !== process.env.ADMIN_SECRET_TOKEN) {
-    throw new Error("Unauthorized!");
-  }
-};
+const checkAuth = verifyAdminAuth;
+
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+]);
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 export async function uploadMedia(formData: FormData) {
   await checkAuth();
 
   const file = formData.get("file") as File;
-  const folder = formData.get("folder") as string;
+  const folder = (formData.get("folder") as string) || "root";
 
   if (!file || file.size === 0) {
     return {
@@ -24,8 +27,25 @@ export async function uploadMedia(formData: FormData) {
     };
   }
 
-  // Construct path based on folder selection
-  const path = folder === "root" ? file.name : `${folder}/${file.name}`;
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    return {
+      error: "File size exceeds the 10MB limit",
+    };
+  }
+
+  if (!ALLOWED_MIME_TYPES.has(file.type)) {
+    return {
+      error: "Invalid file type. Only JPEG, PNG, WebP, GIF, and PDF are allowed.",
+    };
+  }
+
+  // Sanitize path against directory traversal
+  const sanitizedFolder = folder.replace(/[^a-zA-Z0-9_-]/g, "");
+  const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, "_");
+  const path =
+    !sanitizedFolder || sanitizedFolder === "root"
+      ? sanitizedFileName
+      : `${sanitizedFolder}/${sanitizedFileName}`;
 
   try {
     const blob = await put(path, file, {
@@ -58,6 +78,6 @@ export async function deleteMedia(url: string) {
     await del(url);
     return { success: true };
   } catch {
-    return { error: "Failed to delete file" };
+    return { error: "Delete failed" };
   }
 }

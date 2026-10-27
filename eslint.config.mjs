@@ -11,6 +11,7 @@ export default defineConfig([
       ".next/**",
       "out/**",
       "build/**",
+      "lib/generated/**",
       "*.config.js",
       "*.config.mjs",
       "*.config.ts",
