@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
 
   reactCompiler: true,
   experimental: {
+    agentUpgrade: "security",
     serverActions: {
       bodySizeLimit: "10mb",
     },
